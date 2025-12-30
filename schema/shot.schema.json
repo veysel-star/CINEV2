@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "required": [
+    "id",
+    "phase",
+    "status",
+    "inputs",
+    "outputs",
+    "history"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^SH[0-9]{3}$"
+    },
+    "phase": {
+      "type": "string",
+      "enum": ["FAZ_1", "FAZ_2", "FAZ_3"]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PLANNED", "IN_PROGRESS", "BLOCKED", "DONE"]
+    },
+    "inputs": {
+      "type": "object"
+    },
+    "outputs": {
+      "type": "object"
+    },
+    "history": {
+      "type": "array"
+    }
+  },
+  "additionalProperties": false
+}

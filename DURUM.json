@@ -1,0 +1,21 @@
+{
+  "active_project": "demo01",
+  "current_focus": "FAZ_1",
+  "shots": {
+    "SH001": {
+      "id": "SH001",
+      "phase": "FAZ_1",
+      "status": "PLANNED",
+      "inputs": {},
+      "outputs": {},
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2025-12-30T00:00:00Z",
+          "by": "system"
+        }
+      ]
+    }
+ },
+  "last_updated_utc": "2025-12-30T00:00:00Z"
+}
