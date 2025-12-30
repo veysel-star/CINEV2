@@ -50,3 +50,26 @@ CINEV1 is available as a frozen reference only:
 - Tag: CINEV1_v1.0
 
 No code or structure is copied blindly.
+
+## 7. Shot Status Transition Rules
+
+A shot MUST follow this exact lifecycle:
+
+PLANNED → IN_PROGRESS → DONE
+
+### PLANNED → IN_PROGRESS
+Allowed only if:
+- `inputs` is NOT empty
+- A planning decision is recorded in `history`
+
+### IN_PROGRESS → DONE
+Allowed only if:
+- `outputs` is NOT empty
+- All required artifacts are present
+- A completion event is recorded in `history`
+
+### Forbidden
+- Skipping any phase
+- Reverting status backwards
+- Marking DONE without real outputs
+
