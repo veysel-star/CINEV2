@@ -1,6 +1,8 @@
 import argparse
+
 from .validate import cmd_validate
 from .transition import cmd_transition
+
 
 def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
@@ -13,12 +15,14 @@ def main():
     p_tr = sp.add_parser("transition", help="Transition a shot status")
     p_tr.add_argument("path")
     p_tr.add_argument("shot_id")
-    p_tr.add_argument("--to", required=True, choices=["PLANNED","IN_PROGRESS","BLOCKED","DONE"])
+    p_tr.add_argument("--to", required=True, choices=["IN_PROGRESS", "DONE"])
     p_tr.set_defaults(func=cmd_transition)
 
     args = p.parse_args()
     return args.func(args)
 
+
 if __name__ == "__main__":
     raise SystemExit(main())
+
 
