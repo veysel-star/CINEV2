@@ -33,7 +33,20 @@ def _is_iso_utc_z(s: str) -> bool:
         return True
     except Exception:
         return False
+    
+# tools/cli/transition.py
+def cmd_transition(args):
+    # burada gerçek iş (json oku, kontrol et, yaz)
+    print("[ERR] transition not implemented yet")
+    return 2
 
+from pathlib import Path
+
+def cmd_validate(args) -> int:
+    # repo root = .../CINEV2
+    repo_root = Path(__file__).resolve().parents[2]
+    schema_path = repo_root / "schema" / "shot.schema.json"
+    return validate_durum(args.path, str(schema_path))
 
 def validate_durum(durum_path: str, schema_path: str) -> int:
     # 1) basic load
