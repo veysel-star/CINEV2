@@ -1,31 +1,24 @@
-# tools/cli/__main__.py
-from __future__ import annotations
-
 import argparse
-import sys
+from .validate import cmd_validate
+from .transition import cmd_transition
 
-from .validate import validate_durum
-
-
-def build_parser() -> argparse.ArgumentParser:
+def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
-    sub = p.add_subparsers(dest="cmd", required=True)
+    sp = p.add_subparsers(dest="cmd", required=True)
 
-    v = sub.add_parser("validate", help="Validate DURUM.json against schema")
-    v.add_argument("durum_path", help="Path to DURUM.json")
-    v.add_argument("--schema", default="schema/shot.schema.json", help="Path to shot schema json")
+    p_val = sp.add_parser("validate", help="Validate DURUM.json against schema")
+    p_val.add_argument("path")
+    p_val.set_defaults(func=cmd_validate)
 
-    return p
+    p_tr = sp.add_parser("transition", help="Transition a shot status")
+    p_tr.add_argument("path")
+    p_tr.add_argument("shot_id")
+    p_tr.add_argument("--to", required=True, choices=["PLANNED","IN_PROGRESS","BLOCKED","DONE"])
+    p_tr.set_defaults(func=cmd_transition)
 
-
-def main(argv: list[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-
-    if args.cmd == "validate":
-        return validate_durum(args.durum_path, args.schema)
-
-    return 2
-
+    args = p.parse_args()
+    return args.func(args)
 
 if __name__ == "__main__":
-    raise SystemExit(main(sys.argv[1:]))
+    raise SystemExit(main())
+
