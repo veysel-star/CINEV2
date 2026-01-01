@@ -19,7 +19,7 @@
     },
     "status": {
       "type": "string",
-      "enum": ["PLANNED", "IN_PROGRESS", "BLOCKED", "DONE"]
+      "enum": ["PLANNED", "IN_PROGRESS", "QC", "BLOCKED", "DONE"]
     },
     "inputs": {
       "type": "object"
