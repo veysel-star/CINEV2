@@ -55,21 +55,31 @@ No code or structure is copied blindly.
 
 A shot MUST follow this exact lifecycle:
 
-PLANNED → IN_PROGRESS → DONE
+PLANNED → IN_PROGRESS → QC → DONE
 
 ### PLANNED → IN_PROGRESS
 Allowed only if:
 - `inputs` is NOT empty
 - A planning decision is recorded in `history`
 
-### IN_PROGRESS → DONE
+### IN_PROGRESS → QC
 Allowed only if:
 - `outputs` is NOT empty
+- A production step is recorded in `history`
+
+### QC → DONE
+Allowed only if:
+- `outputs` contains a QC report artifact (e.g., `qc.json`)
 - All required artifacts are present
 - A completion event is recorded in `history`
 
+### QC → IN_PROGRESS (revisions)
+Allowed only if:
+- A revision decision is recorded in `history`
+
 ### Forbidden
+- `IN_PROGRESS → DONE` (QC is mandatory)
 - Skipping any phase
-- Reverting status backwards
-- Marking DONE without real outputs
+- Reverting status backwards (except `QC → IN_PROGRESS` for revisions)
+- Marking DONE without real outputs and QC report
 

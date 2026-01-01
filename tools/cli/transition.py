@@ -1,15 +1,17 @@
 import json
 from datetime import datetime, timezone
-
+from pathlib import Path
 
 # Authoritative rules MUST match docs/CINEV2_PIPELINE_RULES.md
 # Strict production flow: PLANNED -> IN_PROGRESS -> DONE
+# Strict production flow: PLANNED -> IN_PROGRESS -> QC -> DONE
 AUTHORITATIVE_TRANSITIONS = {
     "PLANNED": {"IN_PROGRESS"},
-    "IN_PROGRESS": {"DONE"},
-    "DONE": set(),
+    "IN_PROGRESS": {"QC", "BLOCKED"},
+    "QC": {"DONE", "IN_PROGRESS"},  # revisions allowed
+    "BLOCKED": {"IN_PROGRESS"},
+    "DONE": set(),  # terminal
 }
-
 
 def _utc_z_now() -> str:
     return (
@@ -52,6 +54,28 @@ def cmd_transition(args) -> int:
     if to_status not in allowed_next:
         # exact message format requested
         return _fail(f"invalid transition: {cur} -> {to_status}")
+    
+    # QC -> DONE: qc.json must exist on disk (hard gate)
+    if cur == "QC" and to_status == "DONE":
+        outputs = shot.get("outputs") or {}
+        if not isinstance(outputs, dict) or "qc.json" not in outputs:
+            return _fail("QC -> DONE requires outputs['qc.json']")
+
+        qc_rel = outputs["qc.json"]
+        if not isinstance(qc_rel, str) or not qc_rel.strip():
+            return _fail("QC -> DONE requires outputs['qc.json'] to be a non-empty string path")
+
+        durum_dir = Path(path).resolve().parent
+        qc_path = (durum_dir / qc_rel).resolve()
+
+        if not qc_path.exists() or not qc_path.is_file():
+            return _fail("QC -> DONE requires qc.json file to exist on disk")
+
+    # Gate rules (hard)
+    if cur == "IN_PROGRESS" and to_status == "QC":
+        outputs = shot.get("outputs") or {}
+        if not isinstance(outputs, dict) or len(outputs) == 0:
+            return _fail("IN_PROGRESS -> QC requires non-empty outputs")
 
     now = _utc_z_now()
 
