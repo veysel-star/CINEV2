@@ -87,8 +87,9 @@ def main():
         # 4) QC -> DONE (qc.json key var + dosya var) OK
         outdir = tmp / "outputs" / "v0001"
         outdir.mkdir(parents=True, exist_ok=True)
-        (outdir / "qc.json").write_text("{}", encoding="utf-8")
-
+        (outdir / "qc.json").write_bytes(
+            b'{"ok": true, "note": "qc pass"}\n'
+        )
         rc, out = run(CLI + [str(dpath), "S3", "--to", "DONE"])
         expect_ok(rc, out)
 
