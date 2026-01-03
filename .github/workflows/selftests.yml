@@ -1,6 +1,8 @@
 name: QC and Release Selftests
 
 on:
+  push:
+    branches: [ master ]
   pull_request:
     branches: [ master ]
 
