@@ -28,13 +28,21 @@ def cmd_qc(args) -> int:
     out_dir.mkdir(parents=True, exist_ok=True)
 
     qc_path = out_dir / "qc.json"
+    # --- REAL QC CHECK (minimum) ---
+    errors = []
+    preview_path = out_dir / "preview.mp4"
+
+    if not preview_path.exists():
+        errors.append("missing preview.mp4")
+
     qc = {
-        "ok": True,
-        "errors": [],
+        "ok": len(errors) == 0,
+        "errors": errors,
         "warnings": [],
-        "note": "qc pass",
+        "note": "qc pass" if not errors else "qc failed",
         "utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
     }
+
     qc_path.write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
 
     # DURUM outputs'a yaz (qc.json key'in proje standardınla aynı olmalı)

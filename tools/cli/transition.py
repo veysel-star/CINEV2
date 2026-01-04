@@ -69,7 +69,28 @@ def cmd_transition(args) -> int:
         qc_path = (durum_dir / qc_rel).resolve()
 
         if not qc_path.exists() or not qc_path.is_file():
-            return _fail("QC -> DONE requires qc.json file to exist on disk")
+            return _fail("QC -> DONE requires qc.json file to exist on disk"),
+
+            # QC -> DONE: qc.json content must indicate pass (hard gate)
+        try:
+            qc_data = json.loads(qc_path.read_text(encoding="utf-8"))
+        except Exception as e:
+            return _fail(f"QC -> DONE requires qc.json to be valid JSON: {e}")
+
+        if not isinstance(qc_data, dict):
+            return _fail("QC -> DONE requires qc.json to be a JSON object")
+
+        ok = qc_data.get("ok", None)
+        errors = qc_data.get("errors", None)
+
+        if ok is not True:
+            return _fail("QC -> DONE requires qc.json ok:true")
+
+        if not isinstance(errors, list):
+            return _fail("QC -> DONE requires qc.json errors:[]")
+
+        if len(errors) != 0:
+            return _fail("QC -> DONE requires qc.json errors to be empty")
 
     # Gate rules (hard)
     if cur == "IN_PROGRESS" and to_status == "QC":
