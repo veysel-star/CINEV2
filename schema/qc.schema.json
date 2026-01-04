@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cinev2.local/schema/qc.schema.json",
+  "title": "CINEV2 QC Report",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["ok", "errors"],
+  "properties": {
+    "ok": { "type": "boolean" },
+    "errors": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "note": { "type": "string" },
+    "metrics": { "type": "object" },
+    "artifacts": {
+      "type": "array",
+      "items": { "type": "object" }
+    }
+  }
+}
