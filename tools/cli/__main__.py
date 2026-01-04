@@ -3,6 +3,7 @@ import argparse
 from .validate import cmd_validate
 from .transition import cmd_transition
 from .release import cmd_release
+from .qc import cmd_qc
 
 def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
@@ -22,6 +23,11 @@ def main():
     p_rel.add_argument("--out", required=True, help="Output directory (e.g. releases)")
     p_rel.add_argument("--release-id", default=None, help="Optional release folder name (default: UTC timestamp)")
     p_rel.set_defaults(func=cmd_release)
+    p_qc = sp.add_parser("qc", help="generate qc.json for a shot")
+    p_qc.add_argument("durum")
+    p_qc.add_argument("shot_id") 
+    p_qc.add_argument("--out", required=True)
+    p_qc.set_defaults(func=cmd_qc)
 
     args = p.parse_args()
     return args.func(args)
