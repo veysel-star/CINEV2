@@ -34,12 +34,6 @@ def _is_iso_utc_z(s: str) -> bool:
     except Exception:
         return False
     
-# tools/cli/transition.py
-def cmd_transition(args):
-    # burada gerçek iş (json oku, kontrol et, yaz)
-    print("[ERR] transition not implemented yet")
-    return 2
-
 from pathlib import Path
 
 def cmd_validate(args) -> int:
@@ -100,5 +94,42 @@ def validate_durum(durum_path: str, schema_path: str) -> int:
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         return 1
+    
+    # --- QC report validation (hardening) ---
+    qc_schema_path = Path(__file__).resolve().parents[2] / "schema" / "qc.schema.json"
+    qc_schema = None
+
+    if qc_schema_path.exists():
+        try:
+            qc_schema = _load_json(str(qc_schema_path))
+            from jsonschema import Draft7Validator as _QCValidator
+            qc_validator = _QCValidator(qc_schema)
+        except Exception as e:
+            return _fail(f"Cannot load qc.schema.json: {e}")
+
+    for shot_id, shot in durum["shots"].items():
+        outputs = shot.get("outputs") or {}
+        if not isinstance(outputs, dict):
+            continue
+
+        if "qc.json" not in outputs:
+            continue
+
+        qc_rel = outputs["qc.json"]
+        qc_path = (Path(durum_path).parent / qc_rel).resolve()
+
+        if not qc_path.exists():
+            return _fail(f"{shot_id}: qc.json declared but file missing: {qc_rel}")
+
+        if qc_schema:
+            try:
+                qc_data = _load_json(str(qc_path))
+            except Exception as e:
+                return _fail(f"{shot_id}: qc.json unreadable: {e}")
+
+            qc_errors = sorted(qc_validator.iter_errors(qc_data), key=lambda e: e.path)
+            if qc_errors:
+                msg = "; ".join([f"{'/'.join(map(str, e.path))}: {e.message}" for e in qc_errors])
+                return _fail(f"{shot_id}: qc.json schema invalid: {msg}")
 
     return _ok(f"{durum_path} is valid (shots={len(durum['shots'])})")
