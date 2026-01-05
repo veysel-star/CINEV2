@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime, timezone
+from jsonschema import validate, ValidationError
 
 import hashlib
 
@@ -81,6 +82,14 @@ def cmd_qc(args) -> int:
         "metrics": metrics,
         "artifacts": artifacts,
     }
+    # --- QC REPORT SELF-VALIDATION ---
+    try:
+        schema_path = Path(__file__).resolve().parents[2] / "schema" / "qc.schema.json"
+        qc_schema = json.loads(schema_path.read_text(encoding="utf-8"))
+        validate(instance=qc, schema=qc_schema)
+    except ValidationError:
+        qc["ok"] = False
+        qc["errors"].append("qc.json does not conform to schema")
 
     qc_path.write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
 
