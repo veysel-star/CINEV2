@@ -51,6 +51,10 @@ def cmd_qc(args) -> int:
         shot["outputs"] = {}
         outputs = shot["outputs"]
     outputs["qc.json"] = str(qc_path.as_posix())
+    # preview.mp4 varsa DURUM outputs'a yaz
+    preview_path = out_dir / "preview.mp4"
+    if preview_path.exists():
+        outputs["preview.mp4"] = str(preview_path.as_posix())
 
     # last_updated_utc güncelle
     durum["last_updated_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
