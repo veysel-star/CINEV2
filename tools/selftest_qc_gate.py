@@ -97,6 +97,7 @@ def main():
         outdir = tmp / "outputs" / "v0001"
         outdir.mkdir(parents=True, exist_ok=True)
         qc_path = outdir / "qc.json"
+        preview_path = outdir / "preview.mp4"
 
         # 3) QC -> DONE (qc.json key var ama dosya yok) yasak
         durum = load_base_durum()
@@ -109,26 +110,41 @@ def main():
         d3 = tmp / "d3.json"
         write_json(d3, durum)
 
-        # qc.json yokken dene
         if qc_path.exists():
             qc_path.unlink()
         rc, out = run(CLI + [str(d3), "S3", "--to", "DONE"])
         expect_error("file to exist on disk", rc, out)
 
-        # 4) QC -> DONE (qc.json var + ok:true) OK
-        # aynı state dosyası (d3) hâlâ QC’de; şimdi qc.json oluşturup dene
+        # 4) QC -> DONE (qc.json var + ok:true + preview.mp4 var) OK
+        durum = load_base_durum()
+        add_shot(
+            durum,
+            "S4",
+            status="QC",
+            outputs={
+                "qc.json": "outputs/v0001/qc.json",
+                "preview.mp4": "outputs/v0001/preview.mp4",
+            },
+        )
+        d4 = tmp / "d4.json"
+        write_json(d4, durum)
+
         write_qc_json(qc_path, ok=True, errors=[], warnings=[], note="selftest pass")
-        rc, out = run(CLI + [str(d3), "S3", "--to", "DONE"])
+        preview_path.write_text("", encoding="utf-8")  # dosya var olsun yeter
+        rc, out = run(CLI + [str(d4), "S4", "--to", "DONE"])
         expect_ok(rc, out)
 
         # 5) QC -> DONE (qc.json var ama ok:false) yasak
-        # NOT: d3 artık DONE’a geçtiği için yeni bir durum dosyası oluşturuyoruz.
+        # (stabil olsun diye preview da var)
         durum = load_base_durum()
         add_shot(
             durum,
             "S5",
             status="QC",
-            outputs={"qc.json": "outputs/v0001/qc.json"},
+            outputs={
+                "qc.json": "outputs/v0001/qc.json",
+                "preview.mp4": "outputs/v0001/preview.mp4",
+            },
         )
         d5 = tmp / "d5.json"
         write_json(d5, durum)
@@ -140,6 +156,9 @@ def main():
             warnings=[],
             note="selftest fail",
         )
+        if not preview_path.exists():
+            preview_path.write_text("", encoding="utf-8")
+
         rc, out = run(CLI + [str(d5), "S5", "--to", "DONE"])
         expect_error("requires qc.json ok:true", rc, out)
 
