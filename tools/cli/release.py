@@ -72,6 +72,13 @@ def cmd_release(args) -> int:
         if not isinstance(outputs, dict) or len(outputs) == 0:
             return _fail(f"{sid}: DONE requires non-empty outputs")
 
+        # --- HARD RELEASE GATE: required keys must exist in outputs ---
+        required_keys = ["qc.json", "preview.mp4"]
+        for k in required_keys:
+            if k not in outputs:
+                return _fail(f"{sid}: DONE requires outputs['{k}']")
+        # ------------------------------------------------------------
+
         shot_block = {
             "shot_id": sid,
             "files": []
@@ -122,3 +129,4 @@ def cmd_release(args) -> int:
     print(f"[OK] DONE shots: {len(done_ids)}")
     print(f"[OK] manifest: {release_dir / 'manifest.json'}")
     return 0
+
