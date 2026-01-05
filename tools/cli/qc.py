@@ -2,6 +2,19 @@ import json
 from pathlib import Path
 from datetime import datetime, timezone
 
+import hashlib
+
+def _sha256_file(p: Path) -> str:
+    h = hashlib.sha256()
+    with p.open("rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+def _utc_iso_from_mtime(p: Path) -> str:
+    ts = p.stat().st_mtime
+    return datetime.fromtimestamp(ts, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
 def _fail(msg: str) -> int:
     print(f"[FAIL] {msg}")
     return 1
@@ -29,11 +42,35 @@ def cmd_qc(args) -> int:
 
     qc_path = out_dir / "qc.json"
     # --- REAL QC CHECK (minimum) ---
+        # --- REAL QC CHECK (minimum) ---
     errors = []
     preview_path = out_dir / "preview.mp4"
+    preview_exists = preview_path.exists()
 
-    if not preview_path.exists():
+    if not preview_exists:
         errors.append("missing preview.mp4")
+
+    # metrics + artifacts (preview varsa doldur)
+    metrics = {
+        "preview_exists": preview_exists,
+        "preview_bytes": int(preview_path.stat().st_size) if preview_exists else 0,
+        "preview_sha256": _sha256_file(preview_path) if preview_exists else "",
+        "preview_mtime_utc": _utc_iso_from_mtime(preview_path) if preview_exists else "",
+    }
+
+    artifacts = [
+        {
+            "key": "qc.json",
+            "path": str((out_dir / "qc.json").as_posix()),
+        }
+    ]
+    if preview_exists:
+        artifacts.append(
+            {
+                "key": "preview.mp4",
+                "path": str(preview_path.as_posix()),
+            }
+        )
 
     qc = {
         "ok": len(errors) == 0,
@@ -41,6 +78,8 @@ def cmd_qc(args) -> int:
         "warnings": [],
         "note": "qc pass" if not errors else "qc failed",
         "utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "metrics": metrics,
+        "artifacts": artifacts,
     }
 
     qc_path.write_text(json.dumps(qc, ensure_ascii=False, indent=2), encoding="utf-8")
