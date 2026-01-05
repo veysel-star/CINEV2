@@ -6,7 +6,9 @@
   "additionalProperties": true,
   "required": ["ok", "errors"],
   "properties": {
-    "ok": { "type": "boolean" },
+    "ok": {
+      "type": "boolean"
+    },
     "errors": {
       "type": "array",
       "items": { "type": "string" }
@@ -15,11 +17,35 @@
       "type": "array",
       "items": { "type": "string" }
     },
-    "note": { "type": "string" },
-    "metrics": { "type": "object" },
+    "note": {
+      "type": "string"
+    },
+    "metrics": {
+      "type": "object",
+      "properties": {
+        "preview_exists": { "type": "boolean" },
+        "preview_bytes": { "type": "integer" },
+        "preview_sha256": { "type": "string" },
+        "preview_mtime_utc": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": true
+    },
     "artifacts": {
       "type": "array",
-      "items": { "type": "object" }
+      "items": {
+        "type": "object",
+        "properties": {
+          "key": { "type": "string" },
+          "path": { "type": "string" }
+        },
+        "required": ["key", "path"],
+        "additionalProperties": true
+      }
     }
   }
 }
+
+
