@@ -22,7 +22,15 @@
       "enum": ["PLANNED", "IN_PROGRESS", "QC", "BLOCKED", "DONE"]
     },
     "inputs": {
-      "type": "object"
+      "type": "object",
+      "required": ["prompt"],
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
     },
     "outputs": {
       "type": "object"
@@ -33,3 +41,4 @@
   },
   "additionalProperties": false
 }
+
