@@ -5,17 +5,49 @@
     "SH001": {
       "id": "SH001",
       "phase": "FAZ_1",
-      "status": "PLANNED",
-      "inputs": {},
-      "outputs": {},
+      "status": "DONE",
+      "inputs": {
+        "prommpt": "demo01 / SH001 initial planning input"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0001/preview.mp4",
+        "qc.json": "outputs/v0001/qc.json"
+      },
       "history": [
         {
           "event": "CREATED",
           "at": "2025-12-30T00:00:00Z",
           "by": "system"
+        },
+        {
+          "event": "PLANNİNG_DECISION",
+          "at": "2026-01-06T19:30:00Z",
+          "by": "user",
+          "note": "initial shot planning completed"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "PLANNED",
+          "to": "IN_PROGRESS",
+          "at": "2026-01-06T19:38:32Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "IN_PROGRESS",
+          "to": "QC",
+          "at": "2026-01-06T19:40:50Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "QC",
+          "to": "DONE",
+          "at": "2026-01-06T19:41:34Z",
+          "by": "cli"
         }
       ]
     }
- },
-  "last_updated_utc": "2025-12-30T00:00:00Z"
+  },
+  "last_updated_utc": "2026-01-06T19:41:34Z"
 }

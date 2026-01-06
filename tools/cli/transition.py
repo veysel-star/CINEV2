@@ -105,7 +105,7 @@ def cmd_transition(args) -> int:
         qc_path = (durum_dir / qc_rel).resolve()
 
         if not qc_path.exists() or not qc_path.is_file():
-            return _fail("QC -> DONE requires qc.json file to exist on disk"),
+            return _fail("QC -> DONE requires qc.json file to exist on disk")
 
         # QC -> DONE: qc.json content must indicate pass (hard gate)
         try:
