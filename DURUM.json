@@ -93,7 +93,145 @@
           "by": "cli"
         }
       ]
+    },
+    "SH003": {
+      "id": "SH003",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "demo01 / SH003 initial planning input"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0003/preview.mp4",
+        "qc.json": "outputs/v0003/qc.json"
+      },
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-01-06T20:30:00Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-01-06T20:30:10Z",
+          "by": "user",
+          "note": "Initial shot planning completed"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "PLANNED",
+          "to": "IN_PROGRESS",
+          "at": "2026-01-06T21:16:45Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "IN_PROGRESS",
+          "to": "QC",
+          "at": "2026-01-06T21:23:05Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "QC",
+          "to": "DONE",
+          "at": "2026-01-06T21:23:05Z",
+          "by": "cli"
+        }
+      ]
+    },
+    "SH004": {
+      "id": "SH004",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "demo01 / SH004 initial planning input"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0004/preview.mp4",
+        "qc.json": "outputs/v0004/qc.json"
+      },
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-01-06T20:31:00Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-01-06T20:31:10Z",
+          "by": "user",
+          "note": "Initial shot planning completed"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "PLANNED",
+          "to": "IN_PROGRESS",
+          "at": "2026-01-06T21:17:50Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "IN_PROGRESS",
+          "to": "QC",
+          "at": "2026-01-06T21:21:03Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "QC",
+          "to": "DONE",
+          "at": "2026-01-06T21:21:03Z",
+          "by": "cli"
+        }
+      ]
+    },
+    "SH005": {
+      "id": "SH005",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "demo01 / SH005 initial planning input"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0005/preview.mp4",
+        "qc.json": "outputs/v0005/qc.json"
+      },
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-01-06T20:32:00Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-01-06T20:32:10Z",
+          "by": "user",
+          "note": "Initial shot planning completed"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "PLANNED",
+          "to": "IN_PROGRESS",
+          "at": "2026-01-06T21:25:00Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "IN_PROGRESS",
+          "to": "QC",
+          "at": "2026-01-06T21:25:42Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "QC",
+          "to": "DONE",
+          "at": "2026-01-06T21:25:43Z",
+          "by": "cli"
+        }
+      ]
     }
   },
-  "last_updated_utc": "2026-01-06T20:07:13Z"
+  "last_updated_utc": "2026-01-06T21:25:43Z"
 }
