@@ -55,6 +55,42 @@ def cmd_transition(args) -> int:
         # exact message format requested
         return _fail(f"invalid transition: {cur} -> {to_status}")
     
+    # IN_PROGRESS -> QC hard gate
+    if cur == "IN_PROGRESS" and to_status == "QC":
+        outputs = shot.get("outputs") or {}
+        if not isinstance(outputs, dict) or len(outputs) == 0:
+            return _fail("IN_PROGRESS -> QC requires non-empty outputs")
+
+        if "qc.json" not in outputs:
+            return _fail("IN_PROGRESS -> QC requires outputs['qc.json']")
+
+        qc_rel = outputs["qc.json"]
+        if not isinstance(qc_rel, str) or not qc_rel.strip():
+            return _fail("IN_PROGRESS -> QC requires outputs['qc.json'] to be a non-empty string path")
+
+        durum_dir = Path(path).resolve().parent
+        qc_path = (durum_dir / qc_rel).resolve()
+
+        if not qc_path.exists() or not qc_path.is_file():
+            return _fail("IN_PROGRESS -> QC requires qc.json file to exist on disk")
+
+        # schema validate qc.json
+        try:
+            from jsonschema import validate
+
+            # repo root = .../CINEV2
+            repo_root = Path(__file__).resolve().parents[2]
+            schema_path = repo_root / "schema" / "qc.schema.json"
+
+            qc_data = json.loads(qc_path.read_text(encoding="utf-8"))
+            qc_schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+            validate(instance=qc_data, schema=qc_schema)
+        
+        except Exception as e:
+            return _fail(f"IN_PROGRESS -> QC qc.json does not conform to schema: {e}")
+
+   
     # QC -> DONE: qc.json must exist on disk (hard gate)
     if cur == "QC" and to_status == "DONE":
         outputs = shot.get("outputs") or {}
@@ -71,7 +107,7 @@ def cmd_transition(args) -> int:
         if not qc_path.exists() or not qc_path.is_file():
             return _fail("QC -> DONE requires qc.json file to exist on disk"),
 
-            # QC -> DONE: qc.json content must indicate pass (hard gate)
+        # QC -> DONE: qc.json content must indicate pass (hard gate)
         try:
             qc_data = json.loads(qc_path.read_text(encoding="utf-8"))
         except Exception as e:
@@ -91,6 +127,18 @@ def cmd_transition(args) -> int:
 
         if len(errors) != 0:
             return _fail("QC -> DONE requires qc.json errors to be empty")
+        
+        # QC -> DONE also requires preview.mp4
+        if "preview.mp4" not in outputs:
+            return _fail("QC -> DONE requires outputs['preview.mp4']")
+
+        prev_rel = outputs["preview.mp4"]
+        if not isinstance(prev_rel, str) or not prev_rel.strip():
+            return _fail("QC -> DONE requires outputs['preview.mp4'] to be a non-empty string path")
+
+        prev_path = (durum_dir / prev_rel).resolve()
+        if not prev_path.exists() or not prev_path.is_file():
+            return _fail("QC -> DONE requires preview.mp4 file to exist on disk")
 
     # Gate rules (hard)
     if cur == "IN_PROGRESS" and to_status == "QC":
