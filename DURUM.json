@@ -7,7 +7,7 @@
       "phase": "FAZ_1",
       "status": "DONE",
       "inputs": {
-        "prommpt": "demo01 / SH001 initial planning input"
+        "prompt": "demo01 / SH001 initial planning input"
       },
       "outputs": {
         "preview.mp4": "outputs/v0001/preview.mp4",
