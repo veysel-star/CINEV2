@@ -6,11 +6,11 @@ from .release import cmd_release
 from .qc import cmd_qc
 from .newshot import cmd_newshot
 from .listshots import cmd_listshots
+from tools.cli.render import cmd_render
 
 def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
     sp = p.add_subparsers(dest="cmd", required=True)
-
     p_val = sp.add_parser("validate", help="Validate DURUM.json against schema")
     p_val.add_argument("path")
     p_val.set_defaults(func=cmd_validate)
@@ -39,6 +39,12 @@ def main():
     p_ls.add_argument("--status", default=None, help="Filter by status (e.g. DONE, QC, IN_PROGRESS, PLANNED)")
     p.add_argument("--phase", default=None, help="Filter by phase (e.g. FAZ_1)")
     p_ls.set_defaults(func=cmd_listshots)
+    p_render = sp.add_parser("render", help="render preview artifact")
+    p_render.add_argument("path", help="Path to DURUM.json")
+    p_render.add_argument("shot_id", help="Shot id (e.g. SH008)")
+    p_render.add_argument("--out", required=True, help="Output dir")
+    p_render.add_argument("--src", required=True, help="Source preview.mp4")
+    p_render.set_defaults(func=cmd_render)
 
     args = p.parse_args()
     return args.func(args)
