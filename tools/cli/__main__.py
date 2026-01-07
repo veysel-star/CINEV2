@@ -5,7 +5,7 @@ from .transition import cmd_transition
 from .release import cmd_release
 from .qc import cmd_qc
 from .newshot import cmd_newshot
-
+from .listshots import cmd_listshots
 
 def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
@@ -34,10 +34,14 @@ def main():
     p_qc.add_argument("shot_id") 
     p_qc.add_argument("--out", required=True)
     p_qc.set_defaults(func=cmd_qc)
+    p_ls = sp.add_parser("listshots", help="List shots in DURUM.json")
+    p_ls.add_argument("path", help="Path to DURUM.json")
+    p_ls.add_argument("--status", default=None, help="Filter by status (e.g. DONE, QC, IN_PROGRESS, PLANNED)")
+    p.add_argument("--phase", default=None, help="Filter by phase (e.g. FAZ_1)")
+    p_ls.set_defaults(func=cmd_listshots)
 
     args = p.parse_args()
     return args.func(args)
-
 
 if __name__ == "__main__":
     raise SystemExit(main())
