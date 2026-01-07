@@ -4,6 +4,8 @@ from .validate import cmd_validate
 from .transition import cmd_transition
 from .release import cmd_release
 from .qc import cmd_qc
+from .newshot import cmd_newshot
+
 
 def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
@@ -12,7 +14,11 @@ def main():
     p_val = sp.add_parser("validate", help="Validate DURUM.json against schema")
     p_val.add_argument("path")
     p_val.set_defaults(func=cmd_validate)
-
+    p_ns = sp.add_parser("newshot", help="Create a new shot skeleton")
+    p_ns.add_argument("path")
+    p_ns.add_argument("shot_id")
+    p_ns.add_argument("--prompt", required=True)
+    p_ns.set_defaults(func=cmd_newshot)
     p_tr = sp.add_parser("transition", help="Transition a shot status")
     p_tr.add_argument("path")
     p_tr.add_argument("shot_id")
