@@ -281,11 +281,14 @@
     "SH007": {
       "id": "SH007",
       "phase": "FAZ_1",
-      "status": "PLANNED",
+      "status": "DONE",
       "inputs": {
         "prompt": "demo01 / SH007 initial planning input"
       },
-      "outputs": {},
+      "outputs": {
+        "preview.mp4": "outputs/v0007/preview.mp4",
+        "qc.json": "outputs/v0007/qc.json"
+      },
       "history": [
         {
           "event": "CREATED",
@@ -297,9 +300,30 @@
           "at": "2026-01-07T18:42:56Z",
           "by": "user",
           "note": "initial shot planning completed"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "PLANNED",
+          "to": "IN_PROGRESS",
+          "at": "2026-01-07T19:39:06Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "IN_PROGRESS",
+          "to": "QC",
+          "at": "2026-01-07T19:39:48Z",
+          "by": "cli"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "QC",
+          "to": "DONE",
+          "at": "2026-01-07T19:39:48Z",
+          "by": "cli"
         }
       ]
     }
   },
-  "last_updated_utc": "2026-01-07T18:42:56Z"
+  "last_updated_utc": "2026-01-07T19:39:48Z"
 }
