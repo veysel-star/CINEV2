@@ -111,10 +111,13 @@ def cmd_release(args) -> int:
             size = dest.stat().st_size
             sha = _sha256_file(dest)
 
+            rel_dest = str(Path(sid) / dest_name).replace("\\", "/")
+
             shot_block["files"].append({
                 "key": out_key,
                 "source": rel,
-                "dest": str(Path(release_id) / sid / dest_name).replace("\\", "/"),
+                "path": rel_dest,
+                "dest": rel_dest,
                 "bytes": size,
                 "sha256": sha,
             })

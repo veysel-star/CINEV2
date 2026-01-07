@@ -116,6 +116,31 @@ def main():
             print(json.dumps(data, indent=2))
             sys.exit(1)
 
+                # Case 3: manifest listed artifact paths must exist on disk
+        files = data["shots"][0].get("files", [])
+        for f in files:
+            relpath = f.get("path")
+            if not relpath:
+                print("❌ manifest file entry has no path")
+                sys.exit(1)
+
+            p = (rel / relpath).resolve()
+            if not p.exists():
+                print("❌ manifest lists file that does not exist on disk:", relpath)
+                sys.exit(1)
+
+        # Case 4: DONE shot count matches manifest shot count
+        done_shots = [
+            s for s in durum["shots"].values()
+            if s.get("status") == "DONE"
+        ]
+
+        if len(done_shots) != len(data.get("shots", [])):
+            print("❌ DONE shot count != manifest shot count")
+            print("DONE shots:", len(done_shots))
+            print("manifest shots:", len(data.get("shots", [])))
+            sys.exit(1)
+
         print("\n🎉 TÜM RELEASE GATE TESTLERİ BAŞARILI")
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
