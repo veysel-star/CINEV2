@@ -16,6 +16,20 @@ No demo shortcuts, no fake finalization.
 
 ---
 
+## CI Policy (Stateless)
+
+CI runs only stateless selftests:
+- tools/selftest_qc_gate.py
+- tools/selftest_release_gate.py
+
+The following are local-only (must NOT run in CI):
+- listshots (tools/selftest_listshots.py)
+- render (tools/selftest_render.py)
+
+Rationale: CI must not depend on repo state/data files (e.g., DURUM.json content changes),
+local filesystem artifacts, or media files. CI stays deterministic and reproducible.
+
+
 ## 3. Versioning Rules
 - Pre-release: v0.x (architecture and pipeline only)
 - Stable release: v1.0+
