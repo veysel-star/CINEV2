@@ -7,10 +7,12 @@ from pathlib import Path
 # Strict production flow: PLANNED -> IN_PROGRESS -> QC -> DONE
 AUTHORITATIVE_TRANSITIONS = {
     "PLANNED": {"IN_PROGRESS"},
-    "IN_PROGRESS": {"QC", "BLOCKED"},
-    "QC": {"DONE", "IN_PROGRESS"},  # revisions allowed
-    "BLOCKED": {"IN_PROGRESS"},
+    "IN_PROGRESS": {"QC", "BLOCKED", "FAIL"},
+    "QC": {"DONE", "RETRY", "BLOCKED", "FAIL"}, 
+    "RETRY": {"IN_PROGRESS", "FAIL"},
+    "BLOCKED": {"IN_PROGRESS", "FAIL"},
     "DONE": set(),  # terminal
+    "FAIL": set(),  # terminal
 }
 
 def _utc_z_now() -> str:

@@ -22,7 +22,11 @@ def main():
     p_tr = sp.add_parser("transition", help="Transition a shot status")
     p_tr.add_argument("path")
     p_tr.add_argument("shot_id")
-    p_tr.add_argument("--to", required=True, choices=["IN_PROGRESS", "QC", "DONE", "BLOCKED"])
+    p_tr.add_argument(
+        "--to", 
+        required=True, 
+        choices=["IN_PROGRESS", "QC", "DONE", "BLOCKED", "RETRY", "FAIL"],
+    )
     p_tr.set_defaults(func=cmd_transition)
     p_rel = sp.add_parser("release", help="Build a release package from DONE shots")
     p_rel.add_argument("path")
