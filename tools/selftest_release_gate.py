@@ -103,6 +103,34 @@ def main():
             sys.exit(1)
 
         data = json.loads(man.read_text(encoding="utf-8"))
+        # v2 manifest assertions
+        if data.get("manifest_version") != 2:
+            print("❌ manifest_version != 2")
+            print(json.dumps(data, indent=2))
+            sys.exit(1)
+
+        sha = data.get("durum_sha256")
+        if not isinstance(sha, str) or len(sha) != 64:
+            print("❌ durum_sha256 invalid")
+            print("durum_sha256:", sha)
+            sys.exit(1)
+
+        tot = data.get("totals", {})
+        if tot.get("done_shots") != 1:
+            print("❌ totals.done_shots expected 1")
+            print("totals:", tot)
+            sys.exit(1)
+
+        if tot.get("files") != 2:
+            print("❌ totals.files expected 2")
+            print("totals:", tot)
+            sys.exit(1)
+
+        if not isinstance(tot.get("bytes"), int):
+            print("❌ totals.bytes expected int")
+            print("totals:", tot)
+            sys.exit(1)
+
         if "shots" not in data or len(data["shots"]) != 1:
             print("❌ manifest içeriği beklenen değil")
             print(json.dumps(data, indent=2))

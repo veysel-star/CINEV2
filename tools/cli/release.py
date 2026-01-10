@@ -57,14 +57,19 @@ def cmd_release(args) -> int:
 
     # Build manifest entries
     manifest = {
+        "manifest_version": 2,
         "release_id": release_id,
         "source_durum": str(durum_path),
+        "durum_sha256": _sha256_file(durum_path.resolve()),
         "created_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+        "totals": {"done_shots": 0, "files": 0, "bytes": 0},
         "shots": [],
     }
 
     # Ensure directory exists
     release_dir.mkdir(parents=True, exist_ok=True)
+    total_files = 0
+    total_bytes = 0
 
     for sid in sorted(done_ids):
         shot = shots[sid]
@@ -77,7 +82,7 @@ def cmd_release(args) -> int:
         for k in required_keys:
             if k not in outputs:
                 return _fail(f"{sid}: DONE requires outputs['{k}']")
-        # ------------------------------------------------------------
+        # -------------------------------------------------------------
 
         shot_block = {
             "shot_id": sid,
@@ -95,7 +100,6 @@ def cmd_release(args) -> int:
                 return _fail(f"{sid}: outputs['{out_key}'] must be a non-empty string path")
 
             src = (durum_dir / rel).resolve()
-
             if not src.exists() or not src.is_file():
                 return _fail(f"{sid}: outputs['{out_key}'] file missing on disk: {rel}")
 
@@ -109,8 +113,10 @@ def cmd_release(args) -> int:
             shutil.copy2(src, dest)
 
             size = dest.stat().st_size
-            sha = _sha256_file(dest)
+            total_files += 1
+            total_bytes += size
 
+            sha = _sha256_file(dest)
             rel_dest = str(Path(sid) / dest_name).replace("\\", "/")
 
             shot_block["files"].append({
@@ -122,7 +128,13 @@ def cmd_release(args) -> int:
                 "sha256": sha,
             })
 
+        # ✅ Burada olmalı: her shot için 1 kere append
         manifest["shots"].append(shot_block)
+
+    # ✅ totals güncellemesi: tüm shotlar bittikten sonra
+    manifest["totals"]["done_shots"] = len(done_ids)
+    manifest["totals"]["files"] = total_files
+    manifest["totals"]["bytes"] = total_bytes
 
     # Write manifest.json and release.json (same content, different filename for convenience)
     (release_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
