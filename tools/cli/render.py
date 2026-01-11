@@ -45,14 +45,17 @@ def cmd_render(args) -> int:
 
     # destination
     dst_path = out_dir / "preview.mp4"
+    # enforce: output must stay inside repo (relative path contract)
+    durum_dir = durum_path.parent
+    try:
+        rel_preview = dst_path.relative_to(durum_dir).as_posix()
+    except ValueError:
+        return _fail(f"--out must be under {durum_dir} (relative path contract)")
+
     try:
         shutil.copyfile(src_path, dst_path)
     except Exception as e:
         return _fail(f"copy failed: {e}")
-
-    # set outputs.preview.mp4 as RELATIVE path from DURUM.json directory
-    durum_dir = durum_path.parent
-    rel_preview = dst_path.relative_to(durum_dir).as_posix()
 
     outputs = shot.get("outputs") or {}
     if not isinstance(outputs, dict):
