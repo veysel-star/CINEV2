@@ -57,9 +57,9 @@ def cmd_release(args) -> int:
 
     # Build manifest entries
     manifest = {
-        "manifest_version": 2,
+        "manifest_version": 3,
         "release_id": release_id,
-        "source_durum": str(durum_path),
+        "source_durum_rel": durum_path.name,
         "durum_sha256": _sha256_file(durum_path.resolve()),
         "created_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "totals": {"done_shots": 0, "files": 0, "bytes": 0},
@@ -86,7 +86,9 @@ def cmd_release(args) -> int:
 
         shot_block = {
             "shot_id": sid,
-            "files": []
+            "phase": shot.get("phase") if isinstance(shot, dict) else None,
+            "status": shot.get("status") if isinstance(shot, dict) else None,
+            "files": [],
         }
 
         # Copy each output file into releases/<id>/<shot_id>/<key_basename>
