@@ -103,9 +103,9 @@ def main():
             sys.exit(1)
 
         data = json.loads(man.read_text(encoding="utf-8"))
-        # v2 manifest assertions
-        if data.get("manifest_version") != 2:
-            print("❌ manifest_version != 2")
+        # v3 manifest assertions
+        if data.get("manifest_version") != 3:
+            print("❌ manifest_version != 3")
             print(json.dumps(data, indent=2))
             sys.exit(1)
 
