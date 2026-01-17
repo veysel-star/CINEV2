@@ -28,6 +28,9 @@ jobs:
       - name: Run Release gate selftest
         run: python tools/selftest_release_gate.py
 
+      - name: Run State machine selftest
+        run: python tools/selftest_state_machine.py 
+
 
       
   
