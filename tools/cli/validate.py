@@ -37,10 +37,25 @@ def _is_iso_utc_z(s: str) -> bool:
 from pathlib import Path
 
 def cmd_validate(args) -> int:
-    # repo root = .../CINEV2
     repo_root = Path(__file__).resolve().parents[2]
-    schema_path = repo_root / "schema" / "shot.schema.json"
-    return validate_durum(args.path, str(schema_path))
+
+    # load once to detect format
+    try:
+        durum = _load_json(args.path)
+    except Exception as e:
+        return _fail(f"Cannot read DURUM file: {e}")
+
+    # CineV2 format
+    if "active_project" in durum and "current_focus" in durum and "last_updated_utc" in durum:
+        schema_path = repo_root / "schema" / "shot.schema.json"
+        return validate_durum(args.path, str(schema_path))
+
+    # CineV3 format
+    if "project" in durum and "shots" in durum:
+        schema_path = repo_root / "schema" / "cinev3" / "durum.schema.json"
+        return validate_durum_v3(args.path, str(schema_path))
+
+    return _fail("Unknown DURUM format (ne CineV2 ne CineV3 top-level alanları bulundu)")
 
 def validate_durum(durum_path: str, schema_path: str) -> int:
     # 1) basic load
@@ -133,3 +148,91 @@ def validate_durum(durum_path: str, schema_path: str) -> int:
                 return _fail(f"{shot_id}: qc.json schema invalid: {msg}")
 
     return _ok(f"{durum_path} is valid (shots={len(durum['shots'])})")
+
+def validate_durum_v3(durum_path: str, schema_path: str) -> int:
+    # 1) load
+    try:
+        durum = _load_json(durum_path)
+    except Exception as e:
+        return _fail(f"Cannot read DURUM file: {e}")
+
+    # 2) load schema
+    try:
+        schema = _load_json(schema_path)
+    except Exception as e:
+        return _fail(f"Cannot read schema file: {e}")
+
+    # 3) jsonschema validate whole document
+    try:
+        from jsonschema import Draft7Validator
+    except Exception:
+        return _fail("Missing dependency: jsonschema. Install with: python -m pip install jsonschema")
+
+    v = Draft7Validator(schema)
+    errors = sorted(v.iter_errors(durum), key=lambda e: list(e.path))
+
+    if errors:
+        print("[FAIL] Validation errors:", file=sys.stderr)
+        for err in errors:
+            path = ".".join(str(p) for p in err.path) if err.path else "<root>"
+            print(f"  - {path}: {err.message}", file=sys.stderr)
+        return 1
+
+    # 4) enforce shot key == shot.id consistency (same kural CineV2 gibi)
+    shots = durum.get("shots")
+    if not isinstance(shots, dict):
+        return _fail("shots must be an object/dictionary (NOT an array/list)")
+
+    bad = []
+    for shot_id, shot in shots.items():
+        if not isinstance(shot, dict):
+            bad.append(f"{shot_id}: shot value must be object")
+            continue
+        if shot.get("id") != shot_id:
+            bad.append(f"{shot_id}: shot.id must equal the key name")
+
+    if bad:
+        print("[FAIL] Validation errors:", file=sys.stderr)
+        for e in bad:
+            print(f"  - {e}", file=sys.stderr)
+        return 1
+
+    # 5) qc.json validation (mevcut CineV2 davranışıyla aynı yaklaşım)
+    qc_schema_path = Path(__file__).resolve().parents[2] / "schema" / "qc.schema.json"
+    qc_schema = None
+
+    if qc_schema_path.exists():
+        try:
+            qc_schema = _load_json(str(qc_schema_path))
+            from jsonschema import Draft7Validator as _QCValidator
+            qc_validator = _QCValidator(qc_schema)
+        except Exception as e:
+            return _fail(f"Cannot load qc.schema.json: {e}")
+
+    for shot_id, shot in shots.items():
+        outputs = shot.get("outputs") or {}
+        if not isinstance(outputs, dict):
+            continue
+
+        if "qc.json" not in outputs:
+            continue
+
+        qc_rel = outputs["qc.json"]
+        qc_path = (Path(durum_path).parent / qc_rel).resolve()
+
+        if not qc_path.exists():
+            return _fail(f"{shot_id}: qc.json declared but file missing: {qc_rel}")
+
+        if qc_schema:
+            try:
+                qc_data = _load_json(str(qc_path))
+            except Exception as e:
+                return _fail(f"{shot_id}: qc.json unreadable: {e}")
+
+            qc_errors = sorted(qc_validator.iter_errors(qc_data), key=lambda e: e.path)
+            if qc_errors:
+                msg = "; ".join([f"{'/'.join(map(str, e.path))}: {e.message}" for e in qc_errors])
+                return _fail(f"{shot_id}: qc.json schema invalid: {msg}")
+
+    return _ok(f"{durum_path} is valid (cinev3 shots={len(shots)})")
+
