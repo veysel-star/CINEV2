@@ -87,6 +87,29 @@ def cmd_transition(args) -> int:
 
         if not isinstance(qc_data, dict):
             return _fail("QC -> DONE requires qc.json to be a JSON object")
+        
+                # QC -> DONE: qc.json must match schema/qc.schema.json if schema exists
+        qc_schema_path = (Path(__file__).resolve().parents[2] / "schema" / "qc.schema.json")
+        if qc_schema_path.exists():
+            try:
+                from jsonschema import Draft7Validator
+            except Exception:
+                return _fail("QC -> DONE requires jsonschema dependency (pip install jsonschema)")
+
+            try:
+                qc_schema = json.loads(qc_schema_path.read_text(encoding="utf-8"))
+            except Exception as e:
+                return _fail(f"QC -> DONE cannot read qc.schema.json: {e}")
+
+            v = Draft7Validator(qc_schema)
+            qc_errors = sorted(v.iter_errors(qc_data), key=lambda e: list(e.path))
+            if qc_errors:
+                # kısa hata mesajı: ilk birkaç hata yeter
+                parts = []
+                for e in qc_errors[:8]:
+                    path = "/".join(map(str, e.path)) if e.path else "<root>"
+                    parts.append(f"{path}: {e.message}")
+                return _fail("QC -> DONE requires qc.json to match qc.schema.json: " + "; ".join(parts))
 
         ok = qc_data.get("ok", None)
         errors = qc_data.get("errors", None)
