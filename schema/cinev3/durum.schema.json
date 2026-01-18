@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CineV3 DURUM.json",
+  "type": "object",
+  "required": ["project", "shots"],
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 }
+      }
+    },
+    "shots": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/definitions/shot" }
+    }
+  },
+  "definitions": {
+    "shot": {
+      "type": "object",
+      "required": ["id", "phase", "status", "inputs", "outputs", "history"],
+      "additionalProperties": true,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "phase": { "type": "string", "minLength": 1 },
+        "status": {
+          "type": "string",
+          "enum": ["PLANNED", "IN_PROGRESS", "QC", "DONE", "BLOCKED", "RETRY", "FAIL"]
+        },
+        "inputs": { "type": "object" },
+        "outputs": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        },
+        "history": { "type": "array" }
+      }
+    }
+  }
+}
+
