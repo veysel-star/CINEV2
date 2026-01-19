@@ -31,6 +31,10 @@ jobs:
       - name: Run State machine selftest
         run: python tools/selftest_state_machine.py 
 
+      - name: Run CineV3 contract selftest
+        run: python tools/selftest_cinev3_contract.py
+
+
 
       
   
