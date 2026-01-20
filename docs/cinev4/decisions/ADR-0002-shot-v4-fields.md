@@ -1,8 +1,8 @@
-\# ADR-0002: Shot V4 Required Fields
+# ADR-0002: Shot V4 Required Fields
 
 
 
-\## Context
+## Context
 
 
 
@@ -12,33 +12,33 @@ Artifact ve release bağı zayıftı.
 
 
 
-\## Decision
+## Decision
 
 
 
 CineV4 shot modeli şunları zorunlu kılar:
 
-\- id
+- id
 
-\- status
+- status
 
-\- version
+- version
 
-\- artifacts
+- artifacts
 
-\- manifest\_ref
-
-
-
-\## Consequences
+- manifest_ref
 
 
 
-\+ Shot tek başına doğrulanabilir
+## Consequences
 
-\+ Release otomatikleşir
 
-\- Eski CineV3 shot’lar upgrade ister
+
++ Shot tek başına doğrulanabilir
+
++ Release otomatikleşir
+
+- Eski CineV3 shot’lar upgrade ister
 
 
 

@@ -1,12 +1,12 @@
-\# CineV4 Scope
+# CineV4 Scope
 
 
 
-\## 1) Purpose
+## 1) Purpose
 
 
 
-CineV4, CineV3’ün “shot lifecycle + contract” yaklaşımını tek şottan çıkarıp \*\*proje seviyesine\*\* taşır.
+CineV4, CineV3’ün “shot lifecycle + contract” yaklaşımını tek şottan çıkarıp **proje seviyesine** taşır.
 
 
 
@@ -18,13 +18,13 @@ tek bir doğrulanabilir sözleşme (contract) seti ile yönetmek.
 
 CineV4; CineV2 repo’su içinde:
 
-\- Proje manifest’i,
+- Proje manifest’i,
 
-\- Hash/immutability,
+- Hash/immutability,
 
-\- Multi-shot bağımlılıkları,
+- Multi-shot bağımlılıkları,
 
-\- Strict-mode release gating
+- Strict-mode release gating
 
 katmanını tanımlar ve dokümante eder.
 
@@ -32,49 +32,49 @@ katmanını tanımlar ve dokümante eder.
 
 
 
-\## 2) In Scope (CineV4’de var)
+## 2) In Scope (CineV4’de var)
 
 
 
-\### 2.1 Project-level contract
+### 2.1 Project-level contract
 
-\- Proje tanımı (project id, metadata, assets, shots list)
+- Proje tanımı (project id, metadata, assets, shots list)
 
-\- Shot’ların proje içinde referanslanması ve bağlanması
+- Shot’ların proje içinde referanslanması ve bağlanması
 
-\- “Ne üretildi / hangi dosya nereye yazıldı” bilgisinin proje bazında toplanması
-
-
-
-\### 2.2 Manifest + Hashes (immutability)
-
-\- Üretilen artifact’lar için deterministik manifest
-
-\- Dosya hash’leri (en az SHA256) ile “bu çıktı değişmedi” garantisi
-
-\- “Yayınlanabilir set” = manifest + hash + minimum metadata
+- “Ne üretildi / hangi dosya nereye yazıldı” bilgisinin proje bazında toplanması
 
 
 
-\### 2.3 Strict-mode release gate
+### 2.2 Manifest + Hashes (immutability)
 
-\- Release çıkarma, yalnızca kurallar sağlanıyorsa mümkün:
+- Üretilen artifact’lar için deterministik manifest
 
-&nbsp; - Tüm required shot’lar terminal (DONE/FAIL politikası ADR ile)
+- Dosya hash’leri (en az SHA256) ile “bu çıktı değişmedi” garantisi
 
-&nbsp; - QC gereklilikleri sağlanmış
-
-&nbsp; - Manifest + hash’ler üretilmiş / doğrulanmış
-
-\- “Release üretimi” bir komut/flow olarak tanımlanır (CI tarafından da koşabilir)
+- “Yayınlanabilir set” = manifest + hash + minimum metadata
 
 
 
-\### 2.4 Multi-shot orchestration (minimal)
+### 2.3 Strict-mode release gate
 
-\- “Hangi shot’lar bu release’e dahil”
+- Release çıkarma, yalnızca kurallar sağlanıyorsa mümkün:
 
-\- Shot bağımlılıkları (ör: SH010, SH009 tamamlanmadan done sayılmasın gibi) sadece manifest seviyesinde
+  - Tüm required shot’lar terminal (DONE/FAIL politikası ADR ile)
+
+  - QC gereklilikleri sağlanmış
+
+  - Manifest + hash’ler üretilmiş / doğrulanmış
+
+- “Release üretimi” bir komut/flow olarak tanımlanır (CI tarafından da koşabilir)
+
+
+
+### 2.4 Multi-shot orchestration (minimal)
+
+- “Hangi shot’lar bu release’e dahil”
+
+- Shot bağımlılıkları (ör: SH010, SH009 tamamlanmadan done sayılmasın gibi) sadece manifest seviyesinde
 
 
 
@@ -86,89 +86,89 @@ katmanını tanımlar ve dokümante eder.
 
 
 
-\## 3) Non-Goals (CineV4’de yok)
+## 3) Non-Goals (CineV4’de yok)
 
 
 
-\- Render motoru / video üretim backend’i (Blender/Unreal/FFmpeg pipeline) tasarımı
+- Render motoru / video üretim backend’i (Blender/Unreal/FFmpeg pipeline) tasarımı
 
-\- Otomatik QC karar verme (model ile ok/not ok üretme). QC sadece contract doğrulaması + dosya varlığı/hashes
+- Otomatik QC karar verme (model ile ok/not ok üretme). QC sadece contract doğrulaması + dosya varlığı/hashes
 
-\- Dağıtık sistem, cloud orchestration, multi-repo mimari
+- Dağıtık sistem, cloud orchestration, multi-repo mimari
 
-\- UI / web panel / prod ortam deploy
-
-
-
-
-
-\## 4) Inputs / Outputs
-
-
-
-\### Inputs (minimum)
-
-\- CineV3 uyumlu DURUM (shot states + outputs)
-
-\- Proje tanımı / manifest girdisi (dosya)
-
-\- Outputs klasörü (artifact’ların bulunduğu ağaç)
-
-
-
-\### Outputs (minimum)
-
-\- `project.json` veya `manifest.json` (proje + release içeriği)
-
-\- `manifest.sha256` veya manifest içinde `sha256` alanları
-
-\- Release klasörü (versiyonlu): ör. `releases/<rel\_id>/...`
+- UI / web panel / prod ortam deploy
 
 
 
 
 
-\## 5) Compatibility
+## 4) Inputs / Outputs
 
 
 
-\- CineV4, CineV3 shot contract’ını \*\*bozmaz\*\*; üstüne proje katmanı koyar.
+### Inputs (minimum)
 
-\- CineV3’te `qc.json`/`preview.mp4` gibi contract’lar CineV4 release gating’in girdisidir.
+- CineV3 uyumlu DURUM (shot states + outputs)
 
-\- “CineV4 yoksa CineV3 çalışır”; CineV4 opsiyonel üst katmandır.
+- Proje tanımı / manifest girdisi (dosya)
+
+- Outputs klasörü (artifact’ların bulunduğu ağaç)
+
+
+
+### Outputs (minimum)
+
+- `project.json` veya `manifest.json` (proje + release içeriği)
+
+- `manifest.sha256` veya manifest içinde `sha256` alanları
+
+- Release klasörü (versiyonlu): ör. `releases/<rel\_id>/...`
 
 
 
 
 
-\## 6) Success Criteria
+## 5) Compatibility
+
+
+
+- CineV4, CineV3 shot contract’ını \*\*bozmaz\*\*; üstüne proje katmanı koyar.
+
+- CineV3’te `qc.json`/`preview.mp4` gibi contract’lar CineV4 release gating’in girdisidir.
+
+- “CineV4 yoksa CineV3 çalışır”; CineV4 opsiyonel üst katmandır.
+
+
+
+
+
+## 6) Success Criteria
 
 
 
 CineV4 tamamlandı sayılması için minimum şartlar:
 
-\- Proje manifest formatı tanımlı ve dokümante
+- Proje manifest formatı tanımlı ve dokümante
 
-\- Hash politikası tanımlı ve CI’da doğrulanabilir
+- Hash politikası tanımlı ve CI’da doğrulanabilir
 
-\- Strict-mode release gate kuralları ADR’lerle kilitli
+- Strict-mode release gate kuralları ADR’lerle kilitli
 
-\- Örnek bir demo proje ile “manifest + hashes + release gate” uçtan uca çalıştığı kanıtlı
-
-
+- Örnek bir demo proje ile “manifest + hashes + release gate” uçtan uca çalıştığı kanıtlı
 
 
 
-\## 7) Related Docs
+
+
+## 7) Related Docs
 
 
 
-\- `docs/cinev4/ARCHITECTURE.md`
+- `docs/cinev4/ARCHITECTURE.md`
 
-\- `docs/cinev4/decisions/README.md`
+- `docs/cinev4/decisions/README.md`
 
-\- ADR-0001..0004 (bu klasörde)
+- ADR-0001..0004 (bu klasörde)
 
 
 

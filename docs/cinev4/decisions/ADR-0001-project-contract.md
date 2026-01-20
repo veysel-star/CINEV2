@@ -1,8 +1,8 @@
-\# ADR-0001: Project-level Contract
+# ADR-0001: Project-level Contract
 
 
 
-\## Context
+## Context
 
 
 
@@ -12,27 +12,27 @@ Proje bütünlüğü tanımsızdı.
 
 
 
-\## Decision
+## Decision
 
 
 
 CineV4’te:
 
-\- Her proje `project.json` ile tanımlanır
+- Her proje `project.json` ile tanımlanır
 
-\- Shot’lar bu contract altında geçerlidir
-
-
-
-\## Consequences
+- Shot’lar bu contract altında geçerlidir
 
 
 
-\+ Proje kimliği netleşir  
+## Consequences
 
-\+ Release izlenebilir olur  
 
-\- Esnek ama kontrolsüz yapı ortadan kalkar
+
++ Proje kimliği netleşir  
+
++ Release izlenebilir olur  
+
+- Esnek ama kontrolsüz yapı ortadan kalkar
 
 
 

@@ -1,104 +1,24 @@
-\# CineV4 Architecture
+# CineV4 Architecture
 
 
 
-\## 1. High-Level Overview
+## 1. High-Level Overview
 
 
 
-CineV4 mimarisi \*\*contract-first\*\* ve \*\*immutable-output\*\* prensibine dayanır.
+CineV4 mimarisi **contract-first** ve **immutable-output** prensibine dayanır.
 
 
 
 Her aşama:
 
-\- Girdi alır
+- Girdi alır
 
-\- Çıktı üretir
+- Çıktı üretir
 
-\- Manifest ile sabitlenir
+- Manifest ile sabitlenir
 
-\- Hash ile doğrulanır
-
-
-
----
-
-
-
-\## 2. Core Layers
-
-
-
-\### 2.1 Project Layer
-
-
-
-\- `project.json`
-
-\- Projenin kimliği, versiyonu, policy’leri
-
-\- Shot’ların üst bağlamı
-
-
-
-\### 2.2 Shot Layer (CineV4 Shot)
-
-
-
-\- CineV3 shot modelinin devamı
-
-\- Ek alanlar:
-
-&nbsp; - version
-
-&nbsp; - artifacts (liste)
-
-&nbsp; - manifest\_ref
-
-
-
-\### 2.3 Artifact Layer
-
-
-
-\- Fiziksel dosyalar (mp4, qc.json, logs)
-
-\- Her artifact:
-
-&nbsp; - relative path
-
-&nbsp; - size
-
-&nbsp; - hash (sha256)
-
-
-
-\### 2.4 Manifest Layer
-
-
-
-\- `manifest.json`
-
-\- Shot + artifact + hash ilişkisini sabitler
-
-\- Release’in tek doğrulama kaynağıdır
-
-
-
-\### 2.5 Release Layer
-
-
-
-\- Release sadece:
-
-&nbsp; - DONE state
-
-&nbsp; - geçerli manifest
-
-&nbsp; - hash doğrulaması
-
-&nbsp; ile mümkündür
+- Hash ile doğrulanır
 
 
 
@@ -106,21 +26,105 @@ Her aşama:
 
 
 
-\## 3. Data Flow
+## 2. Core Layers
 
 
 
-1\. Shot üretimi (IN\_PROGRESS)
+### 2.1 Project Layer
 
-2\. QC (QC)
+- `project.json` (project-level contract)
 
-3\. DONE → manifest oluşturulur
+Minimum alanlar (MUST):
+- `id` (string, boş olamaz)
+- `version` (string, ör: "v4")
+- `created_utc` (ISO-8601 UTC, Z ile)
+- `policy` (object)
 
-4\. Manifest hash’lenir
+`policy` minimum alanlar (MUST):
+- `hash_alg` (string enum: "sha256")
+- `path_mode` (string enum: "relative")  # tüm artifact path'leri project root'a göre relatif
+- `immutable_outputs` (boolean): strict-mode/policy ile kontrol edilir.   
+   - true: DONE sonrası artifact değişemez (immutability)
+   - false: kontrollü şekilde yeniden üretim yapılabilir; bu durumda yeni manifest üretilir ve hash'ler değiştiği için "eski manifest" artık o release için geçerli olmaz (yeni manifest = yeni kimlik/versiyon).
+   - Not: immutable_outputs davranışı strict-mode policy tarafından belirlenir; normatif tanım ADR-0004 (done-strict-mode).
+- `done_requires_manifest` (boolean, true)
 
-5\. Release gate çalışır
+Opsiyonel alanlar (MAY):
+- `name`, `description`
+- `owner`, `tags`
 
-6\. Release publish edilir
+
+
+
+### 2.2 Shot Layer (CineV4 Shot)
+
+
+
+- CineV3 shot modelinin devamı
+
+- Ek alanlar:
+
+  - version
+
+  - artifacts (liste)
+
+  - manifest_ref
+
+
+
+### 2.3 Artifact Layer
+
+- Fiziksel dosyalar (mp4, qc.json, logs)
+
+Her artifact (MUST):
+- `path` (string, relative; ör: "outputs/v0001/preview.mp4")
+- `size` (integer, bytes)
+- `sha256` (string, 64 hex)
+
+Opsiyonel (MAY):
+- `media_type` (ör: "video/mp4", "application/json")
+- `role` (ör: "preview", "qc", "log")
+
+
+
+
+### 2.4 Manifest Layer
+
+- `manifest.json` (authoritative verification source)
+
+Manifest minimum alanlar (MUST):
+- `schema` (string, ör: "cinev4/manifest@1")
+- `project_id` (string)
+- `shot_id` (string)
+- `created_utc` (ISO-8601 UTC, Z ile)
+- `hash_alg` (string enum: "sha256")
+- `artifacts` (array, min 1)
+
+`artifacts[]` elemanı (MUST):
+- `path` (string, relative)
+- `size` (integer)
+- `sha256` (string)
+
+Manifest kuralları (MUST):
+- Manifest içeriği ile disk üzerindeki dosyaların `size` ve `sha256` değeri eşleşmelidir.
+- Manifest oluşturulduktan sonra değiştirilemez (immutable).
+
+
+
+
+### 2.5 Release Layer
+
+
+
+- Release sadece:
+
+  - DONE state
+
+  - geçerli manifest
+
+  - hash doğrulaması
+
+  - ile mümkündür
 
 
 
@@ -128,33 +132,43 @@ Her aşama:
 
 
 
-\## 4. Failure Model
+## 3. Data Flow
+
+1. Shot üretimi (IN_PROGRESS)
+2. QC (QC)
+3. QC->DONE geçişi için qc.json + preview gibi çıktılar hazır olmalıdır (CineV3 gate devam eder)
+4. Manifest üretimi (MUST): `tools.cli` tarafından (örn. `python -m tools.cli manifest ...`) manifest.json yazılır
+5. Release gate manifest'i doğrular (hash/size/path)
+6. Release publish edilir
 
 
 
-\- DONE sonrası \*\*geri dönüş yok\*\*
 
-\- Manifest bozulursa release invalid
+## 4. Failure Model
 
-\- Hash mismatch = FAIL
+### 4.1 Shot-level FAIL (runtime / production)
+- Shot üretiminde teknik hata (render crash, missing input vb.) => shot `status=FAIL`
+- FAIL terminaldir (geri dönüş yok) [policy strict ise]
+
+### 4.2 Release-gate FAIL (verification)
+- Manifest var ama doğrulama geçmiyor (sha256/size/path mismatch) => release gate FAIL
+- Bu, shot status'unu otomatik FAIL yapmaz (ayrı mekanizma)
+- Release publish edilmez
 
 
 
----
 
-
-
-\## 5. Guarantees
+## 5. Guarantees
 
 
 
 CineV4 şunu garanti eder:
 
-\- Aynı manifest → aynı çıktı
+- Aynı manifest → aynı çıktı
 
-\- Hash tutmuyorsa sistem durur
+- Hash tutmuyorsa sistem durur
 
-\- “Elimde çalışıyordu” durumu yoktur
+- “Elimde çalışıyordu” durumu yoktur
 
 
 

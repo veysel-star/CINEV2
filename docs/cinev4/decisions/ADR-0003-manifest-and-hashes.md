@@ -1,8 +1,8 @@
-\# ADR-0003: Manifest and Hashes
+# ADR-0003: Manifest and Hashes
 
 
 
-\## Context
+## Context
 
 
 
@@ -11,26 +11,25 @@ Dosya varlığı tek başına güvenli değildir.
 İçeriğin değişmediği garanti edilmelidir.
 
 
-
-\## Decision
-
-
-
-\- Her artifact için sha256 hash zorunlu
-
-\- Manifest bu hash’leri authoritative source olarak taşır
+## Decision
 
 
 
-\## Consequences
+- Her artifact için sha256 hash zorunlu
+
+- Manifest bu hash’leri authoritative source olarak taşır
 
 
 
-\+ Reproducibility sağlanır
+## Consequences
 
-\+ Release doğrulanabilir
 
-\- Hash üretimi ek maliyet getirir
+
++ Reproducibility sağlanır
+
++ Release doğrulanabilir
+
+- Hash üretimi ek maliyet getirir
 
 
 
