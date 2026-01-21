@@ -1,0 +1,11 @@
+{
+  "id": "demo01",
+  "version": "v4",
+  "created_utc": "2026-01-21T18:30:00Z",
+  "policy": {
+    "hash_alg": "sha256",
+    "path_mode": "relative",
+    "immutable_outputs": true,
+    "done_requires_manifest": true
+  }
+}
