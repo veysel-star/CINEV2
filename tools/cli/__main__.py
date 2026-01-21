@@ -66,6 +66,7 @@ def main():
     p_tr.set_defaults(func=cmd_transition)
     p_rel = sp.add_parser("release", help="Build a release package from DONE shots")
     p_rel.add_argument("path")
+    p_rel.add_argument("--project", default=None, help="Project id (default: DURUM.active_project)")
     p_rel.add_argument("--out", required=True, help="Output directory (e.g. releases)")
     p_rel.add_argument("--release-id", default=None, help="Optional release folder name (default: UTC timestamp)")
     p_rel.set_defaults(func=cmd_release)
