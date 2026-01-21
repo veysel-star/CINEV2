@@ -1,0 +1,9 @@
+{
+  "id": "selftest_release",
+  "policy": {
+    "hash_alg": "sha256",
+    "path_mode": "relative",
+    "immutable_outputs": true,
+    "done_requires_manifest": true
+  }
+}
