@@ -1,8 +1,17 @@
-﻿import argparse, json, os, sys
+﻿import argparse, json, os, sys, hashlib
+
+HASH_ALG = "sha256"
 
 def _read_json(path: str):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
+
+def _sha256_file(fp: str) -> str:
+    h = hashlib.sha256()
+    with open(fp, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
 
 def _is_safe_relative(path: str) -> bool:
     if os.path.isabs(path):
@@ -11,6 +20,59 @@ def _is_safe_relative(path: str) -> bool:
     if norm.startswith("../") or norm == "..":
         return False
     return True
+
+def _verify_cinev3_manifest_v3(manifest: dict, base_dir_abs: str):
+    # NOTE: v3 paths are relative to the release folder (where manifest.json lives).
+    if manifest.get("manifest_version") != 3:
+        print("[FAIL] unsupported manifest_version:", manifest.get("manifest_version"))
+        sys.exit(2)
+
+    shots = manifest.get("shots")
+    if not isinstance(shots, list) or len(shots) == 0:
+        print("[FAIL] manifest v3: shots must be a non-empty list")
+        sys.exit(2)
+
+    errors = []
+    checked = 0
+
+    for sh in shots:
+        files = (sh or {}).get("files")
+        if not isinstance(files, list):
+            errors.append(f"BAD_SHOT_FILES: {sh.get('shot_id')}")
+            continue
+
+        for f in files:
+            rel = (f or {}).get("path", "")
+            if not isinstance(rel, str) or rel.strip() == "":
+                errors.append("BAD_PATH: <empty>")
+                continue
+            if not _is_safe_relative(rel):
+                errors.append(f"BAD_PATH: {rel}")
+                continue
+
+            abs_path = os.path.join(base_dir_abs, rel)
+            if not os.path.isfile(abs_path):
+                errors.append(f"MISSING: {rel}")
+                continue
+
+            size_disk = os.path.getsize(abs_path)
+            size_manifest = f.get("bytes")
+            if size_manifest != size_disk:
+                errors.append(f"SIZE_MISMATCH: {rel} manifest={size_manifest} disk={size_disk}")
+
+            sha_disk = _sha256_file(abs_path)
+            if sha_disk != f.get("sha256"):
+                errors.append(f"SHA_MISMATCH: {rel}")
+
+            checked += 1
+
+    if errors:
+        print("[FAIL] manifest v3 verify failed:")
+        for e in errors:
+            print(" -", e)
+        sys.exit(2)
+
+    print("[OK] manifest v3 verify passed. files:", checked)
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="tools.cli release-gate", add_help=True)
@@ -44,6 +106,7 @@ def main(argv=None):
 
     proj = _read_json(project_abs)
     pol = (proj.get("policy") or {})
+
     if pol.get("hash_alg") != "sha256":
         print("[FAIL] policy.hash_alg must be sha256")
         sys.exit(2)
@@ -57,11 +120,27 @@ def main(argv=None):
         print("[FAIL] policy.done_requires_manifest must be true")
         sys.exit(2)
 
-    # call verify-manifest (already in CLI) via module import (no subprocess)
-    from .verify_manifest import main as verify_manifest
-    verify_manifest([manifest_path])
+    m = _read_json(manifest_abs)
 
-    print("[OK] release gate passed:", args.release)
+    # CineV4 manifest@1: artifacts are repo-relative
+    if "hash_alg" in m:
+        if m.get("hash_alg") != HASH_ALG:
+            print("[FAIL] unsupported hash_alg:", m.get("hash_alg"))
+            sys.exit(2)
+        from .verify_manifest import main as verify_manifest
+        verify_manifest([manifest_path])
+        print("[OK] release gate passed:", args.release)
+        return
+
+    # CineV3 manifest v3: paths are release-folder-relative
+    if m.get("manifest_version") == 3:
+        base_dir_abs = os.path.dirname(manifest_abs)
+        _verify_cinev3_manifest_v3(m, base_dir_abs)
+        print("[OK] release gate passed:", args.release)
+        return
+
+    print("[FAIL] unknown manifest format (no hash_alg, no manifest_version=3)")
+    sys.exit(2)
 
 if __name__ == "__main__":
     main()
