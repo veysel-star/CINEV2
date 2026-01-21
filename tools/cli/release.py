@@ -142,6 +142,18 @@ def cmd_release(args) -> int:
     (release_dir / "manifest.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
     (release_dir / "release.json").write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
+    # --- CineV4: enforce release-gate after building release ---
+    project_id = getattr(args, "project", None) or durum.get("active_project")
+    if not project_id:
+        raise SystemExit("[FAIL] release requires --project or DURUM.active_project")
+
+    from .release_gate import main as release_gate
+    release_gate([
+        "--project", project_id,
+        "--release", release_id
+    ])
+
+
     print(f"[OK] release created: {release_dir}")
     print(f"[OK] DONE shots: {len(done_ids)}")
     print(f"[OK] manifest: {release_dir / 'manifest.json'}")
