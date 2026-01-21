@@ -60,8 +60,9 @@ def main():
     p_tr.add_argument(
         "--to", 
         required=True, 
-        choices=["IN_PROGRESS", "QC", "DONE", "BLOCKED", "RETRY", "FAIL"],
+        choices=["IN_PROGRESS", "QC", "DONE", "RELEASE", "BLOCKED", "RETRY", "FAIL"],
     )
+    p_tr.add_argument("--release", default=None, help="Release id (e.g. demo01_r0001)")
     p_tr.set_defaults(func=cmd_transition)
     p_rel = sp.add_parser("release", help="Build a release package from DONE shots")
     p_rel.add_argument("path")
