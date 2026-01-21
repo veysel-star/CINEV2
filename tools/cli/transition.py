@@ -11,7 +11,8 @@ AUTHORITATIVE_TRANSITIONS = {
     "QC": {"DONE", "RETRY", "BLOCKED", "FAIL"}, 
     "RETRY": {"IN_PROGRESS", "FAIL"},
     "BLOCKED": {"IN_PROGRESS", "FAIL"},
-    "DONE": set(),  # terminal
+    "DONE": ("RELEASE"),  # terminal
+    "RELEASE": set(), 
     "FAIL": set(),  # terminal
 }
 
@@ -56,6 +57,19 @@ def cmd_transition(args) -> int:
     if to_status not in allowed_next:
         # exact message format requested
         return _fail(f"invalid transition: {cur} -> {to_status}")
+    
+    # CineV4: DONE -> RELEASE hard gate
+    if cur == "DONE" and to_status == "RELEASE":
+        target_release = getattr(args, "release", None)
+        if not target_release:
+            return _fail("DONE -> RELEASE requires --release <release_id>")
+
+        from .release_gate import main as release_gate
+        release_gate([
+            "--project", durum.get("active_project"),
+            "--release", target_release
+        ])
+
     
     # IN_PROGRESS -> QC hard gate
     if cur == "IN_PROGRESS" and to_status == "QC":
