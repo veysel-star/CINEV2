@@ -1,3 +1,19 @@
+﻿
+# --- CineV4 quick-route (do not disturb existing CLI) ---
+import sys as _sys
+if len(_sys.argv) >= 2 and _sys.argv[1] in ("manifest", "verify-manifest"):
+    cmd = _sys.argv[1]
+    rest = _sys.argv[2:]
+    if cmd == "manifest":
+        from .manifest import main as _m
+        _m(rest)
+        raise SystemExit(0)
+    if cmd == "verify-manifest":
+        from .verify_manifest import main as _v
+        _v(rest)
+        raise SystemExit(0)
+# --- end CineV4 quick-route ---
+
 import argparse
 
 from .validate import cmd_validate
