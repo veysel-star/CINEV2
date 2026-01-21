@@ -23,6 +23,7 @@ from .qc import cmd_qc
 from .newshot import cmd_newshot
 from .listshots import cmd_listshots
 from tools.cli.render import cmd_render
+from .promote_release import cmd_promote_release
 # --- CineV4 quick-route (do not disturb existing CLI) ---
 import sys as _sys
 if len(_sys.argv) >= 2 and _sys.argv[1] in ("manifest", "verify-manifest", "release-gate"):
@@ -86,6 +87,14 @@ def main():
     p_render.add_argument("--out", required=True, help="Output dir")
     p_render.add_argument("--src", required=True, help="Source preview.mp4")
     p_render.set_defaults(func=cmd_render)
+    p_pr = sp.add_parser("promote-release", help="Promote DONE shots to RELEASE (after release-gate)")
+    p_pr.add_argument("path")
+    p_pr.add_argument("--project", required=True, help="Project id (e.g. demo01)")
+    p_pr.add_argument("--release", required=True, help="Release id (e.g. demo01_r0005)")
+    g = p_pr.add_mutually_exclusive_group(required=True)
+    g.add_argument("--all-done", action="store_true")
+    g.add_argument("--shots", help="Comma-separated shot ids (e.g. SH001,SH002)")
+    p_pr.set_defaults(func=cmd_promote_release)
 
     args = p.parse_args()
     return args.func(args)
