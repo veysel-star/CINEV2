@@ -23,6 +23,25 @@ from .qc import cmd_qc
 from .newshot import cmd_newshot
 from .listshots import cmd_listshots
 from tools.cli.render import cmd_render
+# --- CineV4 quick-route (do not disturb existing CLI) ---
+import sys as _sys
+if len(_sys.argv) >= 2 and _sys.argv[1] in ("manifest", "verify-manifest", "release-gate"):
+    cmd = _sys.argv[1]
+    rest = _sys.argv[2:]
+    if cmd == "manifest":
+        from .manifest import main as _m
+        _m(rest)
+        raise SystemExit(0)
+    if cmd == "verify-manifest":
+        from .verify_manifest import main as _v
+        _v(rest)
+        raise SystemExit(0)
+    if cmd == "release-gate":
+        from .release_gate import main as _rg
+        _rg(rest)
+        raise SystemExit(0)
+# --- end CineV4 quick-route ---
+
 
 def main():
     p = argparse.ArgumentParser(prog="cinev2-cli")
