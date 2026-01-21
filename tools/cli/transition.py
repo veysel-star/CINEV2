@@ -48,6 +48,10 @@ def cmd_transition(args) -> int:
     shot = shots[shot_id]
     cur = shot.get("status")
 
+    # RELEASE is final / immutable
+    if cur == "RELEASE":  
+        return _fail(f"immutable status: {cur}")
+
     # Hard enforcement: only statuses in AUTHORITATIVE_TRANSITIONS are supported.
     # If a shot is BLOCKED (or anything else), it is outside authoritative rules.
     if cur not in AUTHORITATIVE_TRANSITIONS:
