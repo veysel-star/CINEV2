@@ -33,7 +33,7 @@
         "phase": { "type": "string", "minLength": 1 },
         "status": {
           "type": "string",
-          "enum": ["PLANNED", "IN_PROGRESS", "QC", "DONE", "BLOCKED", "RETRY", "FAIL"]
+          "enum": ["PLANNED", "IN_PROGRESS", "QC", "DONE", "BLOCKED", "RETRY", "FAIL", "RELEASE"]
         },
         "inputs": { "type": "object" },
         "outputs": {
