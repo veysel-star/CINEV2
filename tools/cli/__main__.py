@@ -93,7 +93,11 @@ def main():
     p_pr.add_argument("--release", required=True, help="Release id (e.g. demo01_r0005)")
     g = p_pr.add_mutually_exclusive_group(required=True)
     g.add_argument("--all-done", action="store_true")
-    g.add_argument("--shots", help="Comma-separated shot ids (e.g. SH001,SH002)")
+    g.add_argument(
+        "--shots",
+        nargs="+",
+        help="Shot ids (e.g. SH001 SH002)"
+    )
     p_pr.set_defaults(func=cmd_promote_release)
 
     args = p.parse_args()
