@@ -96,7 +96,7 @@ def main():
     g.add_argument(
         "--shots",
         nargs="+",
-        help="Shot ids (e.g. SH001 SH002)"
+        help="Shot ids: SH001 SH002 ... (comma also ok: SH001,SH002)"
     )
     p_pr.set_defaults(func=cmd_promote_release)
 

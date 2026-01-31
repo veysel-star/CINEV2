@@ -99,7 +99,15 @@ def main():
         qc_path = outdir / "qc.json"
         preview_path = outdir / "preview.mp4"
 
+        def _clean():
+            if qc_path.exists():
+                qc_path.unlink()
+            if preview_path.exists():
+                preview_path.unlink()
+
         # 3) QC -> DONE (qc.json key var ama dosya yok) yasak
+        _clean()
+
         durum = load_base_durum()
         add_shot(
             durum,
@@ -110,12 +118,12 @@ def main():
         d3 = tmp / "d3.json"
         write_json(d3, durum)
 
-        if qc_path.exists():
-            qc_path.unlink()
         rc, out = run(CLI + [str(d3), "S3", "--to", "DONE"])
         expect_error("file to exist on disk", rc, out)
 
         # 4) QC -> DONE (qc.json var + ok:true + preview.mp4 var) OK
+        _clean()
+
         durum = load_base_durum()
         add_shot(
             durum,
@@ -136,6 +144,8 @@ def main():
 
         # 5) QC -> DONE (qc.json var ama ok:false) yasak
         # (stabil olsun diye preview da var)
+        _clean()
+        
         durum = load_base_durum()
         add_shot(
             durum,
@@ -160,7 +170,7 @@ def main():
             preview_path.write_text("", encoding="utf-8")
 
         rc, out = run(CLI + [str(d5), "S5", "--to", "DONE"])
-        expect_error("requires qc.json ok:true", rc, out)
+        expect_error("requires qc.json ok==true", rc, out)
 
         print("\n🎉 TÜM QC GATE TESTLERİ BAŞARILI")
 

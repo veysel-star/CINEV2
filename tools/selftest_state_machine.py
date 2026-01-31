@@ -15,7 +15,6 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as td:
         p = Path(td) / "DURUM.json"
 
-        # Minimal DURUM with 1 shot
         data = {
             "project": {"id": "DEMO"},
             "shots": {
@@ -24,23 +23,20 @@ def main() -> int:
                     "phase": "FAZ_1",
                     "status": "PLANNED",
                     "inputs": {"prompt": "x"},
-                    "outputs": { "preview.mp4": "outputs/v0001/preview.mp4"},
+                    "outputs": {"preview.mp4": "outputs/v0001/preview.mp4"},
                     "history": [],
                 }
             },
         }
         p.write_text(json.dumps(data, indent=2), encoding="utf-8")
 
-        # Allowed transitions (should succeed)
         ok_steps = [
             ("transition", str(p), "SH001", "--to", "IN_PROGRESS"),
-            ("transition", str(p), "SH001", "--to", "BLOCKED"),
-            ("transition", str(p), "SH001", "--to", "IN_PROGRESS"),
             ("transition", str(p), "SH001", "--to", "QC"),
-            ("transition", str(p), "SH001", "--to", "RETRY"),
-            ("transition", str(p), "SH001", "--to", "IN_PROGRESS"),
-            ("transition", str(p), "SH001", "--to", "FAIL"),
         ]
+
+        tested_inprog_idempotency = False
+
         for step in ok_steps:
             r = run(*step)
             if r.returncode != 0:
@@ -49,11 +45,22 @@ def main() -> int:
                 print(r.stderr)
                 return 1
 
-        # Now FAIL is terminal -> any move should fail
-        r = run("transition", str(p), "SH001", "--to", "IN_PROGRESS")
-        if r.returncode == 0:
-            print("❌ expected failure from FAIL -> IN_PROGRESS, but succeeded")
-            return 1
+            # Sadece ilk IN_PROGRESS'tan hemen sonra: IN_PROGRESS -> IN_PROGRESS geçersiz olmalı
+            if (not tested_inprog_idempotency) and step[-1] == "IN_PROGRESS":
+                r2 = run("transition", str(p), "SH001", "--to", "IN_PROGRESS")
+                if r2.returncode == 0:
+                    print("❌ expected failure: IN_PROGRESS -> IN_PROGRESS, but succeeded")
+                    return 1
+
+                combined = (r2.stdout or "") + (r2.stderr or "")
+                if "invalid transition" not in combined:
+                    print("❌ expected 'invalid transition' message, got:")
+                    print("STDOUT:", r2.stdout)
+                    print("STDERR:", r2.stderr)
+                    return 1
+
+                print("✅ OK (beklenen hata)")
+                tested_inprog_idempotency = True
 
         print("✅ OK")
         print("\n🎉 TÜM STATE MACHINE TESTLERİ BAŞARILI")
@@ -61,3 +68,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

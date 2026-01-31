@@ -22,28 +22,31 @@ def _write_json(path: str, data: dict) -> None:
         f.write("\n")
 
 
-def _parse_shots_csv(s):
-    # s artık iki türlü gelebilir:
-    # 1) Eski kullanım: "SH001,SH002"
-    # 2) Yeni kullanım (nargs='+'): ["SH001", "SH002"]
-    if s is None:
-        items = []
-    elif isinstance(s, list):
-        items = s
-    else:
-        items = (s or "").split(",")
-
+def _parse_shots_any(value):
+    """
+    Accept:
+      --shots SH001 SH002        -> ["SH001","SH002"]
+      --shots SH001,SH002        -> ["SH001","SH002"]
+      --shots SH001 SH002,SH003  -> ["SH001","SH002","SH003"]
+    """
     out = []
-    for part in items:
-        part = (part or "").strip()
-        if not part:
+    if value is None:
+        return out
+
+    if isinstance(value, (list, tuple)):
+        items = value
+    else:
+        items = [value]
+
+    for item in items:
+        if item is None:
             continue
-        # kullanıcı hâlâ virgülle yazarsa: ["SH015,SH016"] gibi
-        for token in part.split(","):
-            token = token.strip()
-            if token:
-                out.append(token)
+        for part in str(item).split(","):
+            sid = part.strip()
+            if sid:
+                out.append(sid)
     return out
+
 
 def cmd_promote_release(args) -> int:
     path = args.path
@@ -68,7 +71,7 @@ def cmd_promote_release(args) -> int:
     if args.all_done:
         selected = [sid for sid, sh in shots.items() if isinstance(sh, dict) and sh.get("status") == "DONE"]
     else:
-        selected = _parse_shots_csv(args.shots)
+        selected = _parse_shots_any(args.shots)
         if not selected:
             return _fail("--shots is empty")
 
