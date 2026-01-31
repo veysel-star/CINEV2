@@ -1,6 +1,38 @@
 ﻿import argparse, json, os, sys, hashlib
+from pathlib import Path
 
 HASH_ALG = "sha256"
+
+def _enforce_qc_rules(qc_paths):
+    """
+    Second lock:
+    - qc.json must be ok:true
+    - if metrics.character_passive_status exists => must be PASSIVE_OK
+      (FAZ_2 için asıl kilit bu; metrik yoksa bu kontrol devreye girmez)
+    """
+    errs = []
+    for p in qc_paths:
+        try:
+            qc = json.loads(Path(p).read_text(encoding="utf-8"))
+        except Exception as e:
+            errs.append(f"qc.json read/parse failed: {p} ({e})")
+            continue
+
+        if not isinstance(qc, dict):
+            errs.append(f"qc.json must be object: {p}")
+            continue
+
+        if qc.get("ok") is not True:
+            errs.append(f"qc.json must be ok:true: {p}")
+            continue
+
+        metrics = qc.get("metrics", {})
+        if isinstance(metrics, dict) and "character_passive_status" in metrics:
+            if metrics.get("character_passive_status") != "PASSIVE_OK":
+                errs.append(f"character_passive_status must be PASSIVE_OK: {p}")
+
+    return errs
+
 
 def _read_json(path: str):
     with open(path, "r", encoding="utf-8") as f:
@@ -34,6 +66,65 @@ def _verify_cinev3_manifest_v3(manifest: dict, base_dir_abs: str):
 
     errors = []
     checked = 0
+
+    # --- FAZ_2 QC hard gate (release-level) ---
+    for sh in shots:
+        if sh.get("phase") != "FAZ_2":
+            continue
+
+        files = (sh or {}).get("files")
+        if not isinstance(files, list):
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} missing files list in manifest")
+            sys.exit(2)
+
+        # qc.json'u files[] içinden bul
+        qc_rel = None
+        for f in files:
+            rel = (f or {}).get("path", "")
+            if not isinstance(rel, str) or not rel.strip():
+                continue
+            # hem "outputs/vXXXX/qc.json" hem "outputs\\vXXXX\\qc.json" toleransı
+            rel_norm = rel.replace("\\", "/")
+            if rel_norm.endswith("/qc.json") or rel_norm.endswith("qc.json"):
+                qc_rel = rel
+                break
+
+        if not isinstance(qc_rel, str) or not qc_rel.strip():
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} missing qc.json reference (not present in files[])")
+            sys.exit(2)
+
+        if not _is_safe_relative(qc_rel):
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} qc.json path is unsafe: {qc_rel}")
+            sys.exit(2)
+
+        qc_abs = os.path.join(base_dir_abs, qc_rel)
+        if not os.path.isfile(qc_abs):
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} qc.json not found on disk: {qc_rel}")
+            sys.exit(2)
+
+        try:
+            with open(qc_abs, "r", encoding="utf-8") as fp:
+                qc_data = json.load(fp)
+        except Exception as e:
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} qc.json invalid JSON: {e}")
+            sys.exit(2)
+
+        # qc PASS zorunlu
+        if qc_data.get("ok") is not True:
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} qc.json must be ok:true")
+            sys.exit(2)
+
+        if qc_data.get("errors") not in (None, [], ()):
+            print(f"[FAIL] FAZ_2 shot {sh.get('shot_id')} qc.json errors must be []")
+            sys.exit(2)
+
+        # PASSIVE_OK zorunlu
+        if (qc_data.get("metrics") or {}).get("character_passive_status") != "PASSIVE_OK":
+            print(
+                f"[FAIL] FAZ_2 shot {sh.get('shot_id')} "
+                f"requires character_passive_status == PASSIVE_OK"
+            )
+            sys.exit(2)
 
     for sh in shots:
         files = (sh or {}).get("files")

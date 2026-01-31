@@ -22,22 +22,30 @@ def _write_json(path: str, data: dict) -> None:
         f.write("\n")
 
 
-def _parse_shots_csv(s: str):
-    # "SH001,SH002" -> ["SH001","SH002"]
+def _parse_shots_any(value):
+    """
+    Accept:
+      --shots SH001 SH002        -> ["SH001","SH002"]
+      --shots SH001,SH002        -> ["SH001","SH002"]
+      --shots SH001 SH002,SH003  -> ["SH001","SH002","SH003"]
+    """
     out = []
-    for part in (s or "").split(","):
-        p = part.strip()
-        if p:
-            out.append(p)
-    # unique preserve order
-    uniq = []
-    seen = set()
-    for x in out:
-        if x in seen:
+    if value is None:
+        return out
+
+    if isinstance(value, (list, tuple)):
+        items = value
+    else:
+        items = [value]
+
+    for item in items:
+        if item is None:
             continue
-        seen.add(x)
-        uniq.append(x)
-    return uniq
+        for part in str(item).split(","):
+            sid = part.strip()
+            if sid:
+                out.append(sid)
+    return out
 
 
 def cmd_promote_release(args) -> int:
@@ -63,7 +71,7 @@ def cmd_promote_release(args) -> int:
     if args.all_done:
         selected = [sid for sid, sh in shots.items() if isinstance(sh, dict) and sh.get("status") == "DONE"]
     else:
-        selected = _parse_shots_csv(args.shots)
+        selected = _parse_shots_any(args.shots)
         if not selected:
             return _fail("--shots is empty")
 
@@ -88,6 +96,12 @@ def cmd_promote_release(args) -> int:
             return _fail(f"{sid}: invalid shot record")
 
         cur = sh.get("status")
+
+        # idempotent: zaten RELEASE ise dokunma, devam et
+        if cur == "RELEASE":
+            continue
+
+        # DONE değilse yine fail et (QC/IN_PROGRESS/PLANNED vb. yanlış)
         if cur != "DONE":
             return _fail(f"{sid}: must be DONE to promote (current: {cur})")
 
@@ -123,7 +137,7 @@ def main(argv=None):
 
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--all-done", action="store_true", help="Promote all DONE shots")
-    g.add_argument("--shots", help="Comma-separated shot ids (e.g. SH001,SH002)")
+    g.add_argument("--shots", nargs="+", help="Shot ids (e.g. SH001 SH002) or SH001,SH002")
 
     args = ap.parse_args(argv)
     raise SystemExit(cmd_promote_release(args))
