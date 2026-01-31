@@ -4,6 +4,20 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
+def _is_within(child: Path, parent: Path) -> bool:
+    try:
+        child.relative_to(parent)
+        return True
+    except ValueError:
+        return False
+
+def _resolve_under(root: Path, p: str) -> Path:
+    pp = Path(p)
+    if pp.is_absolute():
+        return pp.resolve()
+    return (root / pp).resolve()
+
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).replace(microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -15,10 +29,25 @@ def _fail(msg: str) -> int:
 
 
 def cmd_render(args) -> int:
-    durum_path = Path(args.path).resolve()
+    durum_path = Path(args.path).absolute()
     shot_id = args.shot_id
-    out_dir = Path(args.out).resolve()
-    src_path = Path(args.src).resolve()
+
+    # state root = DURUM.json'un bulunduğu klasör
+    state_root = durum_path.parent.absolute()
+
+    def _resolve_under(base: Path, p: str) -> Path:
+        pp = Path(p)
+        return pp.absolute() if pp.is_absolute() else (base / pp).absolute()
+
+    def _is_within(child: Path, base: Path) -> bool:
+        try:
+            child.absolute().relative_to(base.absolute())
+            return True
+        except ValueError:
+            return False
+
+    out_dir = _resolve_under(state_root, args.out)
+    src_path = _resolve_under(state_root, args.src)
 
     if not durum_path.exists() or not durum_path.is_file():
         return _fail(f"cannot read {durum_path}")
@@ -39,19 +68,23 @@ def cmd_render(args) -> int:
     shot = shots.get(shot_id)
     if not isinstance(shot, dict):
         return _fail(f"shot not found: {shot_id}")
+    
+    dst_path = out_dir / "preview.mp4"
+
+    if not _is_within(dst_path, state_root):
+        return _fail(f"--out must be under {state_root} (relative path contract)")
+
+    if not _is_within(src_path, state_root):
+        return _fail(f"--src must be under {state_root} (relative path contract)")
+
 
     # ensure out dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    # destination
-    dst_path = out_dir / "preview.mp4"
-    # enforce: output must stay inside repo (relative path contract)
-    durum_dir = durum_path.parent
-    try:
-        rel_preview = dst_path.relative_to(durum_dir).as_posix()
-    except ValueError:
-        return _fail(f"--out must be under {durum_dir} (relative path contract)")
-
+    
+    # yazılacak path'i state_root'a göre relative kaydet
+    rel_preview = dst_path.relative_to(state_root).as_posix()
+ 
     try:
         shutil.copyfile(src_path, dst_path)
     except Exception as e:
