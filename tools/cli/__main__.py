@@ -24,6 +24,9 @@ from .newshot import cmd_newshot
 from .listshots import cmd_listshots
 from tools.cli.render import cmd_render
 from .promote_release import cmd_promote_release
+from tools.cli.bundle import cmd_bundle
+
+
 # --- CineV4 quick-route (do not disturb existing CLI) ---
 import sys as _sys
 if len(_sys.argv) >= 2 and _sys.argv[1] in ("manifest", "verify-manifest", "release-gate"):
@@ -99,6 +102,12 @@ def main():
         help="Shot ids: SH001 SH002 ... (comma also ok: SH001,SH002)"
     )
     p_pr.set_defaults(func=cmd_promote_release)
+    p_bundle = sp.add_parser("bundle", help="Create bundle release from multiple releases")
+    p_bundle.add_argument("--sources", nargs="+", required=True, help="Source release directories")
+    p_bundle.add_argument("--bundle-id", help="Optional bundle id")
+    p_bundle.set_defaults(func=cmd_bundle)
+    p_bundle.add_argument("--shots", nargs="*", help="Optional shot ids (comma or space separated)")
+
 
     args = p.parse_args()
     return args.func(args)
