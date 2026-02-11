@@ -77,14 +77,16 @@ def cmd_render(args) -> int:
     if not _is_within(src_path, state_root):
         return _fail(f"--src must be under {state_root} (relative path contract)")
 
-
     # ensure out dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    
-    # yazılacak path'i state_root'a göre relative kaydet
-    rel_preview = dst_path.relative_to(state_root).as_posix()
- 
+    # yazılacak path'leri state_root'a göre relative kaydet
+    dst_abs = dst_path.resolve()
+    src_abs = src_path.resolve()
+
+    rel_preview = dst_abs.relative_to(state_root).as_posix()
+    rel_src = src_abs.relative_to(state_root).as_posix()
+
     try:
         shutil.copyfile(src_path, dst_path)
     except Exception as e:
@@ -105,7 +107,7 @@ def cmd_render(args) -> int:
             "event": "RENDERED",
             "at": _utc_now(),
             "by": "cli",
-            "note": f"preview.mp4 <= {src_path.as_posix()} -> {rel_preview}",
+            "note": f"preview.mp4 <= {rel_src} -> {rel_preview}",
         }
     )
     shot["history"] = hist

@@ -115,7 +115,13 @@ def _detect_face_any(frames: list[Path]) -> bool:
 def cmd_qc(args) -> int:
     durum_path = args.durum
     shot_id = args.shot_id
+    # state root = DURUM.json'un bulunduğu klasör
+    state_root = Path(durum_path).resolve().parent
+
+    # out_dir: relative verilirse state_root altında çöz
     out_dir = Path(args.out)
+    out_dir = out_dir.resolve() if out_dir.is_absolute() else (state_root / out_dir).resolve()
+
 
     durum = _load_json(durum_path)
     shots = durum.get("shots", {})
@@ -236,12 +242,22 @@ def cmd_qc(args) -> int:
         shot["outputs"] = {}
         outputs = shot["outputs"]
 
-    outputs["qc.json"] = str(qc_path.as_posix())
+    # relative paths (state_root baz alınır)
+    qc_rel = qc_path.relative_to(state_root).as_posix()
+    outputs["qc.json"] = qc_rel
+
     if preview_exists:
-        outputs["preview.mp4"] = str(preview_path.as_posix())
+        preview_rel = preview_path.relative_to(state_root).as_posix()
+        outputs["preview.mp4"] = preview_rel
 
     durum["last_updated_utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-    Path(durum_path).write_text(json.dumps(durum, ensure_ascii=False, indent=2), encoding="utf-8")
+    Path(durum_path).write_text(
+        json.dumps(durum, ensure_ascii=False, indent=2),
+        encoding="utf-8"
+    )
 
-    return _ok(f"{shot_id}: wrote {qc_path}")
+    print(f"[OK] {shot_id}: wrote {qc_rel}")
+    return 0
+
+
 
