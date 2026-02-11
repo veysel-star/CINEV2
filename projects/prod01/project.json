@@ -1,0 +1,11 @@
+{
+  "id": "prod01",
+  "title": "prod01",
+  "schema_version": 1,
+  "policy": {
+    "hash_alg": "sha256",
+    "path_mode": "relative",
+    "immutable_outputs": true,
+    "done_requires_manifest": true
+  }
+}
