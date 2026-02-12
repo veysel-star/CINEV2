@@ -123,14 +123,25 @@ def cmd_bundle(args):
                 continue
 
             # conflict
+            prev_s, _prev_shot = chosen[shot_id]
+
             if prefer == "fail":
-                print(f"ERROR: shot conflict detected: {shot_id}")
+                print(
+                    f"[FAIL] duplicate shot {shot_id} in sources "
+                    f"{prev_s.get('release_id')} ({prev_s.get('src')}) and {s.get('release_id')} ({s.get('src')})"
+                )
                 sys.exit(1)
 
             # prefer latest
-            prev_s, _prev_shot = chosen[shot_id]
             if s["created_dt"] > prev_s["created_dt"]:
+                print(
+                    f"[WARN] duplicate {shot_id} -> picking {s.get('release_id')} (latest), ignoring {prev_s.get('release_id')}"
+                )
                 chosen[shot_id] = (s, shot)
+            else:
+                print(
+                    f"[WARN] duplicate {shot_id} -> keeping {prev_s.get('release_id')} (latest or equal), ignoring {s.get('release_id')}"
+                )
 
     # 3) copy files using source release dir + manifest path
     os.makedirs(out_root, exist_ok=False)
