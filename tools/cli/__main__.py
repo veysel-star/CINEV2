@@ -103,11 +103,33 @@ def main():
     )
     p_pr.set_defaults(func=cmd_promote_release)
     p_bundle = sp.add_parser("bundle", help="Create bundle release from multiple releases")
-    p_bundle.add_argument("--sources", nargs="+", required=True, help="Source release directories")
-    p_bundle.add_argument("--bundle-id", help="Optional bundle id")
-    p_bundle.set_defaults(func=cmd_bundle)
-    p_bundle.add_argument("--shots", nargs="*", help="Optional shot ids (comma or space separated)")
 
+    p_bundle.add_argument(
+        "--sources",
+        nargs="+",
+        required=True,
+        help="Source release directories"
+    )
+
+    p_bundle.add_argument(
+        "--bundle-id",
+        help="Optional bundle id"
+    )
+
+    p_bundle.add_argument(
+        "--shots",
+        default=None,
+        help="Comma-separated shot ids (e.g. SH041,SH042)"
+    )
+
+    p_bundle.add_argument(
+        "--prefer",
+        choices=["fail", "latest"],
+        default="fail",
+        help="Conflict resolution policy (default: fail)"
+    )
+
+    p_bundle.set_defaults(func=cmd_bundle)
 
     args = p.parse_args()
     return args.func(args)

@@ -26,8 +26,13 @@ def main(argv=None):
     mp = args.manifest_path
 
     m = json.load(open(mp, "r", encoding="utf-8"))
-    if m.get("hash_alg") != HASH_ALG:
-        print("[FAIL] unsupported hash_alg:", m.get("hash_alg"))
+
+    hash_alg = m.get("hash_alg") or HASH_ALG
+    if m.get("hash_alg") is None:
+        print(f"[WARN] hash_alg missing; assuming {HASH_ALG} for backward compatibility")
+
+    if hash_alg != HASH_ALG:
+        print(f"[FAIL] unsupported hash_alg: {m.get('hash_alg')}")
         sys.exit(2)
 
     errors = []
