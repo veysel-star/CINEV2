@@ -34,6 +34,10 @@ jobs:
       - name: Run CineV3 contract selftest
         run: python tools/selftest_cinev3_contract.py
 
+      - name: selftest bundle
+        run: python tools/selftest_bundle.py
+  
+
 
 
       
