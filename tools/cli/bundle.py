@@ -146,6 +146,14 @@ def cmd_bundle(args):
     # 3) copy files using source release dir + manifest path
     os.makedirs(out_root, exist_ok=False)
 
+    from pathlib import Path
+
+    repo_root = Path(__file__).resolve().parents[2]   # tools/cli/bundle.py → repo root
+    src_verify = repo_root / "tools" / "verify_bundle.py"
+    dst_verify = Path(out_root) / "verify_bundle.py"
+
+    shutil.copy2(src_verify, dst_verify)
+
     bundle_shots = []
     total_files = 0
     total_bytes = 0
