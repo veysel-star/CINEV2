@@ -82,27 +82,27 @@ def cmd_transition(args) -> int:
         qc_rel = outputs.get("qc.json")
         prev_rel = outputs.get("preview.mp4")
 
+        # key yoksa
         if not qc_rel or not prev_rel:
             return _fail("QC -> DONE requires qc.json and preview.mp4")
 
         for rel in [qc_rel, prev_rel]:
             rel_path = Path(rel)
 
-            # absolute path engeli
             if rel_path.is_absolute():
                 return _fail("absolute paths are not allowed in outputs")
 
-            # traversal engeli
             if ".." in rel_path.parts:
                 return _fail("path traversal detected in outputs")
 
-            # yalnızca outputs/ altı
             if not str(rel).startswith("outputs/"):
                 return _fail("outputs must be inside outputs/ directory")
 
             full = (p.parent / rel_path).resolve()
+
+            # dosya disk'te yoksa da AYNI mesaj dön
             if not full.exists():
-                return _fail(f"missing output file: {rel}")
+                return _fail("QC -> DONE requires qc.json and preview.mp4")
 
     # -------------------------
     # DONE -> RELEASE gate
