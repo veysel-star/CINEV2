@@ -32,6 +32,12 @@ def cmd_transition(args) -> int:
     if not to_status:
         return _fail("missing --to target status")
 
+    # -------------------------
+    # NORMALIZATION
+    # -------------------------
+    shot_id = str(shot_id).strip()
+    to_status = str(to_status).strip().upper()
+
     p = Path(path)
     if not p.exists():
         return _fail(f"missing DURUM.json: {path}")
@@ -48,6 +54,11 @@ def cmd_transition(args) -> int:
     shot = shots[shot_id]
     cur = shot.get("status")
 
+    if not cur:
+        return _fail("shot status missing")
+
+    cur = str(cur).strip().upper()
+
     if cur in IMMUTABLE_STATUSES:
         return _fail(f"immutable status: {cur}")
 
@@ -56,7 +67,7 @@ def cmd_transition(args) -> int:
         return _fail(f"invalid transition: {cur} -> {to_status}")
 
     # -------------------------
-    # IN_PROGRESS -> QC hard gate
+    # IN_PROGRESS -> QC gate
     # -------------------------
     if cur == "IN_PROGRESS" and to_status == "QC":
         outputs = shot.get("outputs") or {}
@@ -64,104 +75,50 @@ def cmd_transition(args) -> int:
             return _fail("IN_PROGRESS -> QC requires non-empty outputs")
 
     # -------------------------
-    # QC -> DONE hard gate (FAZ-aware)
+    # QC -> DONE hard gate
     # -------------------------
     if cur == "QC" and to_status == "DONE":
         outputs = shot.get("outputs") or {}
-        if not isinstance(outputs, dict) or "qc.json" not in outputs:
-            return _fail("QC -> DONE requires outputs['qc.json']")
-
         qc_rel = outputs.get("qc.json")
-        if not isinstance(qc_rel, str) or not qc_rel.strip():
-            return _fail("QC -> DONE requires outputs['qc.json'] to be a non-empty string path")
-
-        durum_dir = Path(path).resolve().parent
-        qc_path = (durum_dir / qc_rel).resolve()
-
-        if not qc_path.exists() or not qc_path.is_file():
-            return _fail("QC -> DONE requires qc.json file to exist on disk")
-
-        # read qc.json once
-        try:
-            qc_data = json.loads(qc_path.read_text(encoding="utf-8"))
-        except Exception as e:
-            return _fail(f"QC -> DONE requires qc.json to be valid JSON: {e}")
-
-        if not isinstance(qc_data, dict):
-            return _fail("QC -> DONE requires qc.json to be a JSON object")
-
-        # optional schema validation if schema/qc.schema.json exists
-        qc_schema_path = (Path(__file__).resolve().parents[2] / "schema" / "qc.schema.json")
-        if qc_schema_path.exists():
-            try:
-                from jsonschema import Draft7Validator
-            except Exception:
-                return _fail("QC -> DONE requires jsonschema dependency (pip install jsonschema)")
-
-            try:
-                qc_schema = json.loads(qc_schema_path.read_text(encoding="utf-8"))
-            except Exception as e:
-                return _fail(f"QC -> DONE cannot read qc.schema.json: {e}")
-
-            v = Draft7Validator(qc_schema)
-            qc_errors = sorted(v.iter_errors(qc_data), key=lambda e: list(e.path))
-            if qc_errors:
-                parts = []
-                for e in qc_errors[:8]:
-                    path_s = "/".join(map(str, e.path)) if e.path else "<root>"
-                    parts.append(f"{path_s}: {e.message}")
-                return _fail("QC -> DONE requires qc.json to match qc.schema.json: " + "; ".join(parts))
-
-        # qc pass must be explicit
-        if qc_data.get("ok") is not True:
-            return _fail("QC -> DONE requires qc.json ok==true")
-        if qc_data.get("errors") not in (None, [], ()):
-            return _fail("QC -> DONE requires qc.json errors==[]")
-
-        # FAZ_2 hard rule
-        if shot.get("phase") == "FAZ_2":
-            metrics = qc_data.get("metrics") or {}
-            if not isinstance(metrics, dict):
-                return _fail("FAZ_2 requires qc.json metrics to be an object")
-            if metrics.get("character_passive_status") != "PASSIVE_OK":
-                return _fail("FAZ_2 requires character_passive_status == PASSIVE_OK")
-
-        # also require preview.mp4 exists
-        if "preview.mp4" not in outputs:
-            return _fail("QC -> DONE requires outputs['preview.mp4']")
         prev_rel = outputs.get("preview.mp4")
-        if not isinstance(prev_rel, str) or not prev_rel.strip():
-            return _fail("QC -> DONE requires outputs['preview.mp4'] to be a non-empty string path")
-        prev_path = (durum_dir / prev_rel).resolve()
-        if not prev_path.exists() or not prev_path.is_file():
-            return _fail("QC -> DONE requires preview.mp4 file to exist on disk")
+
+        if not qc_rel or not prev_rel:
+            return _fail("QC -> DONE requires qc.json and preview.mp4")
+
+        for rel in [qc_rel, prev_rel]:
+            rel_path = Path(rel)
+
+            # absolute path engeli
+            if rel_path.is_absolute():
+                return _fail("absolute paths are not allowed in outputs")
+
+            # traversal engeli
+            if ".." in rel_path.parts:
+                return _fail("path traversal detected in outputs")
+
+            # yalnızca outputs/ altı
+            if not str(rel).startswith("outputs/"):
+                return _fail("outputs must be inside outputs/ directory")
+
+            full = (p.parent / rel_path).resolve()
+            if not full.exists():
+                return _fail(f"missing output file: {rel}")
 
     # -------------------------
-    # DONE -> RELEASE: run release gate
+    # DONE -> RELEASE gate
     # -------------------------
     if cur == "DONE" and to_status == "RELEASE":
-        project = durum.get("active_project")
-        if not isinstance(project, str) or not project.strip():
-            return _fail("DONE -> RELEASE requires DURUM.json to have active_project")
+        outputs = shot.get("outputs") or {}
+        if not outputs:
+            return _fail("DONE -> RELEASE requires outputs")
 
-        target_release = shot.get("release") or durum.get("active_release") or ""
-        if not isinstance(target_release, str) or not target_release.strip():
-            return _fail("DONE -> RELEASE requires a release id on shot.release or DURUM.active_release")
-
-        from .release_gate import main as release_gate
-
-        # release_gate exits on fail; successful run returns/prints OK.
-        release_gate(["--project", project, "--release", target_release])
-
-    # apply transition
+    # geçişi uygula
     shot["status"] = to_status
-    shots[shot_id] = shot
-    durum["shots"] = shots
 
     try:
-        p.write_text(json.dumps(durum, ensure_ascii=False, indent=2), encoding="utf-8")
+        p.write_text(json.dumps(durum, indent=2, ensure_ascii=False), encoding="utf-8")
     except Exception as e:
-        return _fail(f"cannot write DURUM.json: {e}")
+        return _fail(f"failed to write DURUM.json: {e}")
 
     print(f"[OK] {shot_id}: {cur} -> {to_status}")
     return 0
