@@ -85,10 +85,20 @@ def main():
     p.add_argument("--phase", default=None, help="Filter by phase (e.g. FAZ_1)")
     p_ls.set_defaults(func=cmd_listshots)
     p_render = sp.add_parser("render", help="render preview artifact")
+    p_render.add_argument(
+        "--force",
+        action="store_true",
+        help="Allow overwrite (disable strict render guard)"
+    )
     p_render.add_argument("path", help="Path to DURUM.json")
     p_render.add_argument("shot_id", help="Shot id (e.g. SH008)")
     p_render.add_argument("--out", required=True, help="Output dir")
-    p_render.add_argument("--src", required=True, help="Source preview.mp4")
+    p_render.add_argument(
+        "--src",
+        required=False,
+        default=None,
+        help="Source preview.mp4 (default: shot.outputs['preview.mp4'])"
+    )
     p_render.set_defaults(func=cmd_render)
     p_pr = sp.add_parser("promote-release", help="Promote DONE shots to RELEASE (after release-gate)")
     p_pr.add_argument("path")

@@ -10,7 +10,7 @@
         "prompt": "demo01 / SH001 initial planning input"
       },
       "outputs": {
-        "preview.mp4": "outputs/v0001/preview.mp4",
+        "preview.mp4": "outputs/v0021/preview.mp4",
         "qc.json": "outputs/v0001/qc.json"
       },
       "history": [
@@ -45,6 +45,18 @@
           "to": "DONE",
           "at": "2026-01-06T19:41:34Z",
           "by": "cli"
+        },
+        {
+          "event": "RENDERED",
+          "at": "2026-02-17T19:19:51Z",
+          "by": "cli",
+          "note": "preview.mp4 <= outputs/v0019/preview.mp4 -> outputs/v0020/preview.mp4"
+        },
+        {
+          "event": "RENDERED",
+          "at": "2026-02-17T19:23:44Z",
+          "by": "cli",
+          "note": "preview.mp4 <= outputs/v0019/preview.mp4 -> outputs/v0020/preview.mp4"
         }
       ]
     },
@@ -357,5 +369,5 @@
       ]
     }
   },
-  "last_updated_utc": "2026-02-16T16:06:51Z"
+  "last_updated_utc": "2026-02-17T19:23:44Z"
 }
