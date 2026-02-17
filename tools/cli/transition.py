@@ -84,7 +84,7 @@ def cmd_transition(args) -> int:
 
         # key yoksa
         if not qc_rel or not prev_rel:
-            return _fail("QC -> DONE requires qc.json and preview.mp4")
+            return _fail("QC -> DONE requires qc.json and preview.mp4 file to exist on disk")
 
         for rel in [qc_rel, prev_rel]:
             rel_path = Path(rel)
@@ -102,7 +102,16 @@ def cmd_transition(args) -> int:
 
             # dosya disk'te yoksa da AYNI mesaj dön
             if not full.exists():
-                return _fail("QC -> DONE requires qc.json and preview.mp4")
+                return _fail("QC -> DONE requires qc.json and preview.mp4 file to exist on disk")
+            # qc.json ok==true şartı (S5 için)
+            try:
+                qc_abs = (p.parent / Path(qc_rel)).resolve()
+                qc_data = json.loads(qc_abs.read_text(encoding="utf-8"))
+            except Exception:
+                return _fail("QC -> DONE requires qc.json ok==true")
+
+            if qc_data.get("ok") is not True:
+                return _fail("QC -> DONE requires qc.json ok==true")
 
     # -------------------------
     # DONE -> RELEASE gate
