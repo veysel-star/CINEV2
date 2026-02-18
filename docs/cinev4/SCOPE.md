@@ -127,6 +127,24 @@ katmanını tanımlar ve dokümante eder.
 
 
 
+## 4.1 Production Contract (CineV4)
+
+- Üretim birimi: **shot**
+- Çıktı standardı (minimum):
+  - `outputs/<shot_id>/<vXXXX>/preview.mp4`
+  - `outputs/<shot_id>/<vXXXX>/qc.json`
+- Gate sırası (authoritative):
+  - `IN_PROGRESS -> QC -> DONE -> RELEASE`
+- DONE şartları (hard gate):
+  - `qc.json` içinde `ok == true`
+  - `preview.mp4` disk üzerinde mevcut
+  - output path’leri **relative**, **traversal yok**, repo kökü altında
+- RELEASE şartları (hard gate):
+  - `manifest.json` + `sha256` doğrulaması
+  - bundle verify PASS
+
+  
+
 
 ## 5) Compatibility
 
@@ -137,8 +155,6 @@ katmanını tanımlar ve dokümante eder.
 - CineV3’te `qc.json`/`preview.mp4` gibi contract’lar CineV4 release gating’in girdisidir.
 
 - “CineV4 yoksa CineV3 çalışır”; CineV4 opsiyonel üst katmandır.
-
-
 
 
 
