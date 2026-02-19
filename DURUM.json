@@ -163,7 +163,32 @@
           "note": "SH018 planning locked (deterministic production test)"
         }
       ]
+    },
+    "SH019": {
+      "id": "SH019",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "Locked-off cinematic close shot of a lantern in falling snow at night, static camera, 5 seconds"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0020/preview.mp4",
+        "qc.json": "outputs/v0020/qc.json"
+      },
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-02-19T21:04:14Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-02-19T21:04:14Z",
+          "by": "user",
+          "note": "initial shot planning completed"
+        }
+      ]
     }
   },
-  "last_updated_utc": "2026-02-19T20:47:03Z"
+  "last_updated_utc": "2026-02-19T21:08:16Z"
 }
