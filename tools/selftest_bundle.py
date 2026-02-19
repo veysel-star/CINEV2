@@ -76,26 +76,26 @@ def make_fake_release(base: Path, release_id: str, shot_id: str):
     qc_obj = {"ok": True, "shot_id": shot_id, "release_id": release_id}
     qc_bytes = (json.dumps(qc_obj, indent=2) + "\n").encode("utf-8")
 
-    preview_rel = f"{shot_id}/preview.mp4"
-    qc_rel = f"{shot_id}/qc.json"
+    preview_rel = f"releases/{release_id}/{shot_id}/preview.mp4"
+    qc_rel = f"releases/{release_id}/{shot_id}/qc.json"
 
-    write_file(rel_dir / preview_rel, preview_bytes)
-    write_file(rel_dir / qc_rel, qc_bytes)
+    write_file(shot_dir / "preview.mp4", preview_bytes)
+    write_file(shot_dir / "qc.json", qc_bytes)
 
     preview_sha = sha256_bytes(preview_bytes)
     qc_sha = sha256_bytes(qc_bytes)
 
     manifest = {
-        "manifest_version": 3,
-        "hash_alg": "sha256",
-        "release_id": release_id,
-        "source_durum_rel": "DURUM.json",
-        "durum_sha256": "0" * 64,
-        "created_utc": utc_now_iso(),
-        "totals": {
-            "done_shots": 1,
-            "files": 2,
-            "bytes": len(preview_bytes) + len(qc_bytes),
+       "manifest_version": 4,          # <-- 3 -> 4
+       "hash_alg": "sha256",
+       "release_id": release_id,
+       "source_durum_rel": "DURUM.json",
+       "durum_sha256": "0" * 64,
+       "created_utc": utc_now_iso(),
+       "totals": {
+           "done_shots": 1,
+           "files": 2,
+           "bytes": len(preview_bytes) + len(qc_bytes),
         },
         "shots": [
             {
@@ -121,6 +121,11 @@ def make_fake_release(base: Path, release_id: str, shot_id: str):
                     },
                 ],
             }
+        ],
+        # v4 strict: verify_manifest uses ONLY this list
+        "artifacts": [
+            {"path": preview_rel, "size": len(preview_bytes), "sha256": preview_sha},
+            {"path": qc_rel, "size": len(qc_bytes), "sha256": qc_sha},
         ],
     }
 
