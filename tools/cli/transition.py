@@ -12,8 +12,8 @@ AUTHORITATIVE_TRANSITIONS = {
     "IN_PROGRESS": {"QC"},
     "QC": {"DONE"},
     "DONE": {"RELEASE"},
+    "RELEASE": set(),  # terminal
 }
-
 
 def _fail(msg: str) -> int:
     print("[ERR]", msg)
@@ -58,6 +58,9 @@ def cmd_transition(args) -> int:
         return _fail("shot status missing")
 
     cur = str(cur).strip().upper()
+    # no-op transition is not allowed (e.g., IN_PROGRESS -> IN_PROGRESS)
+    if cur == to_status:
+        return _fail(f"invalid transition: {cur} -> {to_status}")
 
     if cur in IMMUTABLE_STATUSES:
         return _fail(f"immutable status: {cur}")
@@ -121,17 +124,21 @@ def cmd_transition(args) -> int:
         if not outputs:
             return _fail("DONE -> RELEASE requires outputs")
 
-    # geçişi uygula
+    # APPLY TRANSITION (genel)
     shot["status"] = to_status
+    shots[shot_id] = shot
+    durum["shots"] = shots
 
     try:
-        p.write_text(json.dumps(durum, indent=2, ensure_ascii=False), encoding="utf-8")
+        p.write_text(
+            json.dumps(durum, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
     except Exception as e:
         return _fail(f"failed to write DURUM.json: {e}")
 
     print(f"[OK] {shot_id}: {cur} -> {to_status}")
     return 0
-
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="tools.cli transition", add_help=True)
