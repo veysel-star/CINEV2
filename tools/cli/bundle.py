@@ -79,17 +79,14 @@ def cmd_bundle(args):
         with open(manifest_path, "r", encoding="utf-8") as f:
             m = json.load(f)
 
-        # hard requirements
-        if m.get("manifest_version") != 3:
+        # hard requirements (v4 ONLY)
+        if m.get("manifest_version") != 4:
             print(f"ERROR: unsupported manifest_version in {manifest_path}: {m.get('manifest_version')}")
             sys.exit(1)
 
-        hash_alg = m.get("hash_alg") or "sha256"
-        if m.get("hash_alg") is None:
-            print(f"[WARN] hash_alg missing in {manifest_path}; assuming sha256 for backward compatibility")
-
+        hash_alg = m.get("hash_alg")
         if hash_alg != "sha256":
-            print(f"ERROR: unsupported hash_alg in {manifest_path}: {m.get('hash_alg')}")
+            print(f"ERROR: hash_alg must be sha256 in {manifest_path}")
             sys.exit(1)
 
         created_utc = m.get("created_utc")
@@ -97,11 +94,16 @@ def cmd_bundle(args):
             print(f"ERROR: created_utc missing in {manifest_path}")
             sys.exit(1)
 
+        release_id = m.get("release_id")
+        if not release_id:
+            print(f"ERROR: release_id missing in {manifest_path}")
+            sys.exit(1)
+
         loaded_sources.append({
             "src": src,
             "manifest_path": manifest_path,
             "manifest": m,
-            "release_id": m.get("release_id"),
+            "release_id": release_id,
             "created_dt": _parse_created_utc(created_utc),
             "manifest_sha256": _sha256_of_file(manifest_path),
         })
@@ -122,7 +124,6 @@ def cmd_bundle(args):
                 chosen[shot_id] = (s, shot)
                 continue
 
-            # conflict
             prev_s, _prev_shot = chosen[shot_id]
 
             if prefer == "fail":
@@ -143,18 +144,21 @@ def cmd_bundle(args):
                     f"[WARN] duplicate {shot_id} -> keeping {prev_s.get('release_id')} (latest or equal), ignoring {s.get('release_id')}"
                 )
 
-    # 3) copy files using source release dir + manifest path
+    # 3) create bundle release dir + copy files
     os.makedirs(out_root, exist_ok=False)
 
     from pathlib import Path
+    repo_root = Path(__file__).resolve().parents[2]  # tools/cli/bundle.py → repo root
 
-    repo_root = Path(__file__).resolve().parents[2]   # tools/cli/bundle.py → repo root
+    # keep verify script inside bundle for convenience
     src_verify = repo_root / "tools" / "verify_bundle.py"
     dst_verify = Path(out_root) / "verify_bundle.py"
-
-    shutil.copy2(src_verify, dst_verify)
+    if src_verify.exists():
+        shutil.copy2(src_verify, dst_verify)
 
     bundle_shots = []
+    bundle_artifacts = []
+
     total_files = 0
     total_bytes = 0
 
@@ -164,22 +168,37 @@ def cmd_bundle(args):
         src_release_dir = s["src"]
         src_release_id = s["release_id"]
 
+        # create shot dir
         shot_out_dir = os.path.join(out_root, shot_id)
         os.makedirs(shot_out_dir, exist_ok=True)
 
         out_files = []
-        for fobj in shot.get("files", []):
-            rel_path = fobj.get("path")  # e.g. SH041/preview.mp4
+        out_artifacts = []
+
+        prefix = f"releases/{src_release_id}/"
+
+        # v4: source files come from artifacts (repo-relative)
+        for a in s["manifest"].get("artifacts", []):
+            rel_path = a.get("path")  # e.g. releases/R1/SH041/preview.mp4
             if not rel_path:
-                print(f"ERROR: file entry missing path in shot {shot_id} (source {src_release_dir})")
+                print(f"ERROR: artifact missing path in source {src_release_dir}")
                 sys.exit(1)
 
-            src_file = os.path.join(src_release_dir, rel_path)
+            if not rel_path.startswith(prefix):
+                print(f"ERROR: artifact path not under {prefix}: {rel_path}")
+                sys.exit(1)
+
+            suffix = rel_path[len(prefix):]  # SH041/preview.mp4
+            art_shot = suffix.split("/", 1)[0]
+            if art_shot != shot_id:
+                continue
+
+            src_file = os.path.join(src_release_dir, suffix)
             if not os.path.exists(src_file):
                 print(f"ERROR: source file missing: {src_file}")
                 sys.exit(1)
 
-            filename = os.path.basename(rel_path)
+            filename = os.path.basename(suffix)
             dest_rel = f"{shot_id}/{filename}"
             dest_abs = os.path.join(out_root, dest_rel)
 
@@ -192,25 +211,32 @@ def cmd_bundle(args):
             total_bytes += size
 
             out_files.append({
-                "key": fobj.get("key", filename),
-                # keep traceability but still valid for verify:
-                "source": f"{src_release_id}/{rel_path}",
+                "key": filename,
+                "source": rel_path,
                 "path": dest_rel,
                 "dest": dest_rel,
                 "bytes": size,
                 "sha256": sha,
             })
 
+            out_artifacts.append({
+                "path": f"releases/{bundle_id}/{dest_rel}",
+                "size": size,
+                "sha256": sha,
+            })
+
+        # record this shot in bundle (even if files empty, it will likely fail verify later)
         bundle_shots.append({
             "shot_id": shot_id,
-            "phase": shot.get("phase", "FAZ_1"),
-            "status": shot.get("status", "DONE"),
+            "phase": shot.get("phase"),
+            "status": shot.get("status"),
             "files": out_files,
         })
+        bundle_artifacts.extend(out_artifacts)
 
-    # 4) bundle manifest MUST match release-manifest schema style
+    # 4) write bundle manifest (v4 strict)
     bundle_manifest = {
-        "manifest_version": 3,
+        "manifest_version": 4,
         "hash_alg": "sha256",
         "release_id": bundle_id,
         "source_durum_rel": "DURUM.json",
@@ -221,8 +247,8 @@ def cmd_bundle(args):
             "files": total_files,
             "bytes": total_bytes,
         },
-        "shots": bundle_shots,
-        # extra info (doesn't break anything; verify-manifest should ignore unknown keys)
+        "shots": bundle_shots,          # harmless; v4 verify uses artifacts
+        "artifacts": bundle_artifacts,  # REQUIRED in v4 strict
         "kind": "bundle",
         "sources": [
             {
