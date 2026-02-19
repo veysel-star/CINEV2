@@ -57,13 +57,15 @@ def cmd_release(args) -> int:
 
     # Build manifest entries
     manifest = {
-        "manifest_version": 3,
+        "manifest_version": 4,
+        "hash_alg": "sha256",
         "release_id": release_id,
         "source_durum_rel": durum_path.name,
         "durum_sha256": _sha256_file(durum_path.resolve()),
         "created_utc": datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
         "totals": {"done_shots": 0, "files": 0, "bytes": 0},
         "shots": [],
+        "artifacts": [],  # <-- v4 strict: MUST be non-empty
     }
 
     # Ensure directory exists
@@ -128,6 +130,14 @@ def cmd_release(args) -> int:
                 "dest": rel_dest,
                 "bytes": size,
                 "sha256": sha,
+            })
+
+            # v4 strict artifact path is REPO-relative
+            artifact_path = str(Path("releases") / release_id / sid / dest_name).replace("\\", "/")
+            manifest["artifacts"].append({
+               "path": artifact_path,
+               "size": size,
+               "sha256": sha,
             })
 
         # ✅ Burada olmalı: her shot için 1 kere append

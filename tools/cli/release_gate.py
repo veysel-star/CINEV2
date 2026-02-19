@@ -213,25 +213,20 @@ def main(argv=None):
 
     m = _read_json(manifest_abs)
 
-    # CineV4 manifest@1: artifacts are repo-relative
-    if "hash_alg" in m:
-        if m.get("hash_alg") != HASH_ALG:
-            print("[FAIL] unsupported hash_alg:", m.get("hash_alg"))
-            sys.exit(2)
-        from .verify_manifest import main as verify_manifest
-        verify_manifest([manifest_path])
-        print("[OK] release gate passed:", args.release)
-        return
+    # v4 ONLY – legacy formats are not supported
+    if m.get("manifest_version") != 4:
+        print("[FAIL] only manifest_version=4 is supported")
+        sys.exit(2)
 
-    # CineV3 manifest v3: paths are release-folder-relative
-    if m.get("manifest_version") == 3:
-        base_dir_abs = os.path.dirname(manifest_abs)
-        _verify_cinev3_manifest_v3(m, base_dir_abs)
-        print("[OK] release gate passed:", args.release)
-        return
+    if m.get("hash_alg") != HASH_ALG:
+        print("[FAIL] hash_alg must be sha256 for manifest v4")
+        sys.exit(2)
 
-    print("[FAIL] unknown manifest format (no hash_alg, no manifest_version=3)")
-    sys.exit(2)
+    from .verify_manifest import main as verify_manifest
+    verify_manifest([manifest_path])
+
+    print("[OK] release gate passed:", args.release)
+    return
 
 if __name__ == "__main__":
     main()
