@@ -45,18 +45,6 @@
           "to": "DONE",
           "at": "2026-01-06T19:41:34Z",
           "by": "cli"
-        },
-        {
-          "event": "RENDERED",
-          "at": "2026-02-17T19:19:51Z",
-          "by": "cli",
-          "note": "preview.mp4 <= outputs/v0019/preview.mp4 -> outputs/v0020/preview.mp4"
-        },
-        {
-          "event": "RENDERED",
-          "at": "2026-02-17T19:23:44Z",
-          "by": "cli",
-          "note": "preview.mp4 <= outputs/v0019/preview.mp4 -> outputs/v0020/preview.mp4"
         }
       ]
     },
@@ -71,40 +59,7 @@
         "preview.mp4": "outputs/v0002/preview.mp4",
         "qc.json": "outputs/v0002/qc.json"
       },
-      "history": [
-        {
-          "event": "CREATED",
-          "at": "2026-01-06T20:00:00Z",
-          "by": "system"
-        },
-        {
-          "event": "PLANNING_DECISION",
-          "at": "2026-01-06T20:00:10Z",
-          "by": "user",
-          "note": "Initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-06T20:02:17Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "IN_PROGRESS",
-          "to": "QC",
-          "at": "2026-01-06T20:07:06Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "QC",
-          "to": "DONE",
-          "at": "2026-01-06T20:07:13Z",
-          "by": "cli"
-        }
-      ]
+      "history": []
     },
     "SH003": {
       "id": "SH003",
@@ -117,40 +72,7 @@
         "preview.mp4": "outputs/v0003/preview.mp4",
         "qc.json": "outputs/v0003/qc.json"
       },
-      "history": [
-        {
-          "event": "CREATED",
-          "at": "2026-01-06T20:30:00Z",
-          "by": "system"
-        },
-        {
-          "event": "PLANNING_DECISION",
-          "at": "2026-01-06T20:30:10Z",
-          "by": "user",
-          "note": "Initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-06T21:16:45Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "IN_PROGRESS",
-          "to": "QC",
-          "at": "2026-01-06T21:23:05Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "QC",
-          "to": "DONE",
-          "at": "2026-01-06T21:23:05Z",
-          "by": "cli"
-        }
-      ]
+      "history": []
     },
     "SH004": {
       "id": "SH004",
@@ -163,40 +85,7 @@
         "preview.mp4": "outputs/v0004/preview.mp4",
         "qc.json": "outputs/v0004/qc.json"
       },
-      "history": [
-        {
-          "event": "CREATED",
-          "at": "2026-01-06T20:31:00Z",
-          "by": "system"
-        },
-        {
-          "event": "PLANNING_DECISION",
-          "at": "2026-01-06T20:31:10Z",
-          "by": "user",
-          "note": "Initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-06T21:17:50Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "IN_PROGRESS",
-          "to": "QC",
-          "at": "2026-01-06T21:21:03Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "QC",
-          "to": "DONE",
-          "at": "2026-01-06T21:21:03Z",
-          "by": "cli"
-        }
-      ]
+      "history": []
     },
     "SH005": {
       "id": "SH005",
@@ -209,40 +98,7 @@
         "preview.mp4": "outputs/v0005/preview.mp4",
         "qc.json": "outputs/v0005/qc.json"
       },
-      "history": [
-        {
-          "event": "CREATED",
-          "at": "2026-01-06T20:32:00Z",
-          "by": "system"
-        },
-        {
-          "event": "PLANNING_DECISION",
-          "at": "2026-01-06T20:32:10Z",
-          "by": "user",
-          "note": "Initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-06T21:25:00Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "IN_PROGRESS",
-          "to": "QC",
-          "at": "2026-01-06T21:25:42Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "QC",
-          "to": "DONE",
-          "at": "2026-01-06T21:25:43Z",
-          "by": "cli"
-        }
-      ]
+      "history": []
     },
     "SH006": {
       "id": "SH006",
@@ -255,40 +111,7 @@
         "preview.mp4": "outputs/v0006/preview.mp4",
         "qc.json": "outputs/v0006/qc.json"
       },
-      "history": [
-        {
-          "event": "CREATED",
-          "at": "2026-01-06T00:00:00Z",
-          "by": "system"
-        },
-        {
-          "event": "PLANNING_DECISION",
-          "at": "2026-01-06T00:00:10Z",
-          "by": "user",
-          "note": "Initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-06T23:05:10Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "IN_PROGRESS",
-          "to": "QC",
-          "at": "2026-01-06T23:05:47Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "QC",
-          "to": "DONE",
-          "at": "2026-01-06T23:05:53Z",
-          "by": "cli"
-        }
-      ]
+      "history": []
     },
     "SH007": {
       "id": "SH007",
@@ -301,40 +124,7 @@
         "preview.mp4": "outputs/v0007/preview.mp4",
         "qc.json": "outputs/v0007/qc.json"
       },
-      "history": [
-        {
-          "event": "CREATED",
-          "at": "2026-01-07T18:42:56Z",
-          "by": "system"
-        },
-        {
-          "event": "PLANNING_DECISION",
-          "at": "2026-01-07T18:42:56Z",
-          "by": "user",
-          "note": "initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-07T19:39:06Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "IN_PROGRESS",
-          "to": "QC",
-          "at": "2026-01-07T19:39:48Z",
-          "by": "cli"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "QC",
-          "to": "DONE",
-          "at": "2026-01-07T19:39:48Z",
-          "by": "cli"
-        }
-      ]
+      "history": []
     },
     "SH008": {
       "id": "SH008",
@@ -347,27 +137,33 @@
         "qc.json": "outputs/v0008/qc.json",
         "preview.mp4": "outputs/v0008/preview.mp4"
       },
+      "history": []
+    },
+    "SH018": {
+      "id": "SH018",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "Locked-off cinematic wide shot of a snowy village at night, slow falling snow, static camera, 5 seconds"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0019/preview.mp4",
+        "qc.json": "outputs/v0019/qc.json"
+      },
       "history": [
         {
           "event": "CREATED",
-          "at": "2026-01-07T20:55:36Z",
+          "at": "2026-02-19T00:00:00Z",
           "by": "system"
         },
         {
           "event": "PLANNING_DECISION",
-          "at": "2026-01-07T20:55:36Z",
+          "at": "2026-02-19T00:00:10Z",
           "by": "user",
-          "note": "initial shot planning completed"
-        },
-        {
-          "event": "STATUS_CHANGED",
-          "from": "PLANNED",
-          "to": "IN_PROGRESS",
-          "at": "2026-01-07T20:55:37Z",
-          "by": "cli"
+          "note": "SH018 planning locked (deterministic production test)"
         }
       ]
     }
   },
-  "last_updated_utc": "2026-02-17T19:23:44Z"
+  "last_updated_utc": "2026-02-19T20:47:03Z"
 }
