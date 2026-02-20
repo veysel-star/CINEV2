@@ -169,7 +169,8 @@ def cmd_release(args) -> int:
     ])
 
         # Optional: create + push git tag for this release_id
-    if getattr(args, "tag_release", True):
+    import os
+    if getattr(args, "tag_release", True) and not os.environ.get("CI"):
         tag = release_id
 
         # create annotated tag (fails if exists)
