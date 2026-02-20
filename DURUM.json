@@ -188,7 +188,32 @@
           "note": "initial shot planning completed"
         }
       ]
+    },
+    "SH020": {
+      "id": "SH020",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "locked-off cinematic close shot, 5 seconds"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v0022/preview.mp4",
+        "qc.json": "outputs/v0022/qc.json"
+      },
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-02-20T20:52:18Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-02-20T20:52:18Z",
+          "by": "user",
+          "note": "initial shot planning completed"
+        }
+      ]
     }
   },
-  "last_updated_utc": "2026-02-19T21:08:16Z"
+  "last_updated_utc": "2026-02-20T20:56:05Z"
 }
