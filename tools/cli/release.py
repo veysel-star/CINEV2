@@ -3,6 +3,7 @@ import shutil
 import hashlib
 from datetime import datetime, timezone
 from pathlib import Path
+import subprocess
 
 
 def _utc_id() -> str:
@@ -166,6 +167,29 @@ def cmd_release(args) -> int:
         "--project", project_id,
         "--release", release_id
     ])
+
+        # Optional: create + push git tag for this release_id
+    import os
+    if getattr(args, "tag_release", True) and not os.environ.get("CI"):
+        tag = release_id
+
+        # create annotated tag (fails if exists)
+        r = subprocess.run(
+            ["git", "tag", "-a", tag, "-m", f"release {tag}"],
+            capture_output=True,
+            text=True,
+        )
+        if r.returncode != 0:
+            raise SystemExit(f"[FAIL] git tag failed: {r.stderr.strip() or r.stdout.strip()}")
+
+        # push tag to origin
+        r = subprocess.run(
+            ["git", "push", "origin", tag],
+            capture_output=True,
+            text=True,
+        )
+        if r.returncode != 0:
+            raise SystemExit(f"[FAIL] git push tag failed: {r.stderr.strip() or r.stdout.strip()}")
 
 
     print(f"[OK] release created: {release_dir}")

@@ -73,6 +73,20 @@ def main():
     p_rel.add_argument("--project", default=None, help="Project id (default: DURUM.active_project)")
     p_rel.add_argument("--out", required=True, help="Output directory (e.g. releases)")
     p_rel.add_argument("--release-id", default=None, help="Optional release folder name (default: UTC timestamp)")
+    # Tagging (default ON)
+    p_rel.add_argument(
+        "--tag",
+        dest="tag_release",
+        action="store_true",
+        help="Create and push a git tag with the release_id (default: enabled)",
+    )
+    p_rel.add_argument(
+        "--no-tag",
+        dest="tag_release",
+        action="store_false",
+        help="Do not create/push a git tag",
+    )
+    p_rel.set_defaults(tag_release=True)
     p_rel.set_defaults(func=cmd_release)
     p_qc = sp.add_parser("qc", help="generate qc.json for a shot")
     p_qc.add_argument("durum")
