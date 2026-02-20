@@ -55,6 +55,10 @@ def cmd_release(args) -> int:
     durum_dir = durum_path.resolve().parent
     release_dir = (out_root / release_id).resolve()
 
+    # IMMUTABLE RELEASE: do not allow overwriting existing release
+    if release_dir.exists():
+        return _fail(f"release directory already exists (immutable): {release_dir}")
+
     # Build manifest entries
     manifest = {
         "manifest_version": 4,
