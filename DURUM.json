@@ -226,7 +226,7 @@
         "preview.mp4": "outputs/v023/preview.mp4",
         "qc.json": "outputs/v023/qc.json"
       },
-      "active_output": "v0023",
+      "active_output": "v023",
       "history": [
         {
           "event": "CREATED",
