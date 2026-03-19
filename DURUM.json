@@ -197,9 +197,10 @@
         "prompt": "locked-off cinematic close shot, 5 seconds"
       },
       "outputs": {
-        "preview.mp4": "outputs/v0022/preview.mp4",
-        "qc.json": "outputs/v0022/qc.json"
+        "preview.mp4": "outputs/v0024/preview.mp4",
+        "qc.json": "outputs/v0024/qc.json"
       },
+      "active_output": "v0024",
       "history": [
         {
           "event": "CREATED",
@@ -213,7 +214,71 @@
           "note": "initial shot planning completed"
         }
       ]
+    },
+    "SH021": {
+      "id": "SH021",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "blender cube demo"
+      },
+      "outputs": {
+        "preview.mp4": "outputs/v023/preview.mp4",
+        "qc.json": "outputs/v023/qc.json"
+      },
+      "active_output": "v023",
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-02-20T21:40:01Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-02-20T21:40:01Z",
+          "by": "user",
+          "note": "initial shot planning completed"
+        }
+      ]
+    },
+    "SH022": {
+      "id": "SH022",
+      "phase": "FAZ_1",
+      "status": "DONE",
+      "inputs": {
+        "prompt": "multi object blender test scene"
+      },
+      "outputs": {
+        "qc.json": "outputs/v0025/qc.json",
+        "preview.mp4": "outputs/v0025/preview.mp4"
+      },
+      "active_output": "v0025",
+      "history": [
+        {
+          "event": "CREATED",
+          "at": "2026-02-20T22:07:12Z",
+          "by": "system"
+        },
+        {
+          "event": "PLANNING_DECISION",
+          "at": "2026-02-20T22:07:12Z",
+          "by": "user",
+          "note": "initial shot planning completed"
+        },
+        {
+          "event": "STATUS_CHANGED",
+          "from": "PLANNED",
+          "to": "DONE",
+          "at": "2026-03-16T20:32:07Z",
+          "by": "cli"
+        }
+      ]
     }
   },
-  "last_updated_utc": "2026-02-20T20:56:05Z"
+  "films": {
+    "demo01":{
+      "timeline": ["SH020", "SH022"]
+    }
+  },
+  "last_updated_utc": "2026-03-16T20:32:07Z"
 }

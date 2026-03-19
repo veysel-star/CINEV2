@@ -25,7 +25,7 @@ from .listshots import cmd_listshots
 from tools.cli.render import cmd_render
 from .promote_release import cmd_promote_release
 from tools.cli.bundle import cmd_bundle
-
+from .assemble import main as assemble_main
 
 # --- CineV4 quick-route (do not disturb existing CLI) ---
 import sys as _sys
@@ -154,6 +154,13 @@ def main():
     )
 
     p_bundle.set_defaults(func=cmd_bundle)
+
+    p_assemble = sp.add_parser("assemble", help="Assemble shots into final film")
+    p_assemble.add_argument("durum_json")
+    p_assemble.add_argument("--shots", required=False, help="SH001,SH002,...")
+    p_assemble.add_argument("--film", required=False, help="Film id from DURUM.json")
+    p_assemble.add_argument("--out", required=True, help="Output film path")
+    p_assemble.set_defaults(func=assemble_main)
 
     args = p.parse_args()
     return args.func(args)

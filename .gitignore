@@ -20,3 +20,10 @@ releases/
 
 
 .tmp/
+
+# cinev build artifacts
+film/
+*.mp4
+tmp_assemble_list.txt
+list.txt
+
